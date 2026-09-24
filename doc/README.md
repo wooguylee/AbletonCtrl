@@ -59,7 +59,7 @@ Control Surface에 `AbletonVVoori`를 선택합니다. 기존 `AbletonMCP` 선�
 
 ## 문서
 
-- [다른 PC의 Codex에 전달할 설치 요청문](other-pc-codex.md)
+- [다른 PC의 Codex 설치·등록 — 루트 README](../README.md)
 - [설치·Codex 연결·기존 MCP에서 전환](setup.md)
 - [English quickstart](quickstart-en.md)
 - [54개 도구와 호출 예](tools.md)

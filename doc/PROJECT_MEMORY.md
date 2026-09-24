@@ -3,7 +3,8 @@
 ## User decisions
 
 - All project conversations, research, plans, results, and knowledge stay under this
-  project's `doc/`. No global memory writes. Root README is only a documentation index.
+  project's `doc/`. No global memory writes. On 2026-09-25 the user explicitly requested
+  full cross-PC installation/MCP setup instructions in root README, replacing its index-only role.
 - Target **Ableton Live 12 Suite**.
 - Control Surface / installed Remote Script name: **AbletonVVoori** (user requested).
 - 2026-09-25: user completed setup and explicitly authorized full native testing,
@@ -95,7 +96,8 @@
 - 37 upstream tool schemas and vendored original bytes remain unchanged.
 - Reusable native runner: scripts/live_acceptance.py (read-only default; --run-writes
   adds 5 test tracks, Drift and Core Library 505 Core Kit). Raw reports/media are local.
-- Cross-PC Codex installation handoff: doc/other-pc-codex.md contains a copyable
-  request and user steps. Generate local paths/token on the destination PC; merge
+- Cross-PC Codex installation handoff: root README.md is the canonical guide;
+  doc/other-pc-codex.md points to it. A repository URL plus a request to install
+  and configure MCP following README.md provides the task context. Generate local paths/token on the destination PC; merge
   the generated abletonctrl table into user config for use across projects.
   Initial connection verification is read-only; Live and MCP run on the same host.
