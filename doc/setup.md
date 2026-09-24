@@ -98,3 +98,20 @@ Copy-Item -LiteralPath 'doc\local\codex-config.toml' -Destination '.codex\config
 
 해제는 Live의 해당 Control Surface를 `None`으로 바꾸고 MCP 클라이언트 설정 항목을
 제거하면 됩니다. 소켓은 Remote Script의 `disconnect()`에서 닫습니다.
+
+## Codex에서 반드시 특정 Ableton MCP를 사용해야 하나요?
+
+아닙니다. Codex는 MCP 서버를 등록해 제공되는 도구를 호출하므로, 특정 Ableton MCP
+제품으로 고정되지 않습니다. Codex가 지원하는 로컬 stdio 또는 Streamable HTTP
+방식으로 호환되게 구현한 서버라면 직접 만든 서버도 연결할 수 있습니다.
+근거: [공식 MCP 지원 기능과 등록 방법](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+이 프로젝트에서는 자체 제작한 `Ableton Arrangement MCP`를 사용합니다.
+연결 구조는 `Codex → stdio MCP 서버 → 로컬 TCP → Live Remote Script → Arrangement 클립`입니다.
+Codex에는 MCP 서버를 등록하고, Live에는 함께 제공하는 Remote Script를 설치·활성화합니다.
+이 구현은 loopback에 연결하므로 MCP 프로세스와 Live를 같은 컴퓨터에서 실행합니다.
+
+어떤 MCP를 선택할지는 실제 지원 기능에 따라 결정합니다. MCP 연결 성공만으로
+Arrangement 제어가 보장되지는 않으며, 선택한 서버가 필요한 클립 조회·생성·편집
+도구와 Live 측 동작을 구현해야 합니다. 현재 구현의 범위와 검증 한계는
+[도구 설명](tools.md)과 [검증 기록](verification.md)에 구분해 두었습니다.

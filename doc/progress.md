@@ -26,3 +26,6 @@
   initial branch `main`. Completion rule recorded in AGENTS.md and project memory.
 - Pre-commit verification rerun: 20 tests passed (2.000s), `pip check` passed.
   Source and reviewed Markdown records are committed; credentials and local runtime files excluded.
+- MCP selection Q&A: verified official Codex transport/registration documentation and current
+  stdio/loopback code. Added an FAQ distinguishing MCP compatibility from Arrangement capabilities.
+  Documentation-only update; checked staged diff and links, no runtime test rerun needed.
