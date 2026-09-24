@@ -3,8 +3,9 @@
 AbletonCtrl 0.3 combines all 37 tools from the pinned ahujasid/ableton-mcp with 17
 additional Arrangement tools. One stdio MCP server, one Live Remote Script.
 Target: Live 12 Suite. External Python >=3.10; Python 3.12 is recommended for the
-verified setup. Windows automated tests and wheel installation are verified;
-actual Live and macOS acceptance are still pending.
+verified setup. Windows Live 12.4.6 Suite, automated tests and wheel installation
+are verified; macOS acceptance remains pending. For a ready-to-copy Codex setup
+request on another computer, see [the handoff guide](other-pc-codex.md).
 
 ## Windows
 

@@ -1,5 +1,8 @@
 # 설치와 연결
 
+다른 PC의 Codex에게 설치를 맡길 때는 [복사해서 전달할 요청문](other-pc-codex.md)을
+사용하세요. 여러 프로젝트에서 사용할 사용자 범위 MCP 등록도 설명합니다.
+
 ## 1. 외부 Python 환경
 
 외부 MCP 서버는 Python 3.10 이상, Live 내부 스크립트는 Live가 제공하는 Python을

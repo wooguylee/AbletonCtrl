@@ -95,3 +95,7 @@
 - 37 upstream tool schemas and vendored original bytes remain unchanged.
 - Reusable native runner: scripts/live_acceptance.py (read-only default; --run-writes
   adds 5 test tracks, Drift and Core Library 505 Core Kit). Raw reports/media are local.
+- Cross-PC Codex installation handoff: doc/other-pc-codex.md contains a copyable
+  request and user steps. Generate local paths/token on the destination PC; merge
+  the generated abletonctrl table into user config for use across projects.
+  Initial connection verification is read-only; Live and MCP run on the same host.
