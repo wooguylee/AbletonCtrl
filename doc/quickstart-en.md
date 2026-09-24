@@ -1,6 +1,6 @@
 # English quickstart
 
-AbletonCtrl combines all 37 tools from the pinned ahujasid/ableton-mcp with 14
+AbletonCtrl 0.3 combines all 37 tools from the pinned ahujasid/ableton-mcp with 17
 additional Arrangement tools. One stdio MCP server, one Live Remote Script.
 Target: Live 12 Suite. External Python >=3.10; Python 3.12 is recommended for the
 verified setup. Windows automated tests and wheel installation are verified;
@@ -37,7 +37,7 @@ install a `Live` package: the native API is supplied by Live itself.
 3. Merge `doc/local/codex-config.toml` into your Codex configuration, or merge
    `doc/local/mcp-client.json` into another stdio MCP client's configuration.
    Generated paths are absolute. Never overwrite unrelated settings.
-4. Restart/reload your MCP client. Expect **51 tools**. Call `ableton_status` and
+4. Restart/reload your MCP client. Expect **54 tools**. Call `ableton_status` and
    `get_remote_script_info` before attempting edits.
 5. Test on a disposable Set, using the acceptance list in [verification](verification.md).
 
@@ -68,17 +68,34 @@ Python path stable. The old `ableton-arrangement-mcp` executable remains an alia
 Close Live, pull the checkout, reinstall with `python -m pip install .`, and run
 the installer again with the same User Library plus `--replace`. It backs up the
 installed folder to `doc/local/backups`, preserves the token, and refreshes both
-connection files. Restart Live and your MCP client. Do not mix script/server versions.
+connection files. Version 0.3 also generates `silence.wav` in the installed script
+folder for audio edge trimming; updating only the MCP package is insufficient.
+Restart Live and your MCP client. Do not mix script/server versions.
 
 ## Scope
 
 Original tool names, parameter schemas and return conventions are retained.
 New `ableton_` tools use opaque track/clip handles; original tools use indices.
-Arrangement supports MIDI creation, audio import, copy/move/delete, metadata,
-and MIDI note read/add/update/delete. Move requires a free, non-overlapping range
-on the same track and returns a new handle. Audio import is restricted to the
-track's free tail. Arbitrary timeline trimming/resizing, cross-track Arrangement
-copy, automation/comping, and automatic Set saving are not exposed.
+Arrangement supports MIDI creation, audio import, same/cross-track copy and move,
+timeline trim/resize, metadata, deletion and MIDI note read/add/update/delete.
+Copies/moves require matching MIDI/audio tracks and free destinations. Audio import
+is restricted to the track's free tail. Automation/comping editing and automatic
+Set saving are not exposed.
+
+`ableton_trim_arrangement_clip(clip_id, start_beats, end_beats)` keeps a range
+inside the original. `ableton_resize_arrangement_clip` accepts either/both absolute
+boundaries, preserving the content timeline rather than stretching it. Looped
+extensions return up to 64 contiguous native segments with continuous phase,
+including any intro before the loop. Both return `clips[]` with new IDs.
+`ableton_copy_arrangement_clip` takes `target_track_id` and `destination_beats`;
+move accepts an optional target track too. See [examples and recovery](timeline-editing.md).
+
+Timeline edits prepare muted copies beyond the requested range, then keep a full
+backup until replacement succeeds. Other clips cannot overlap the requested range.
+Unwarped audio cannot extend beyond its file; native length/marker readback is
+checked. `PARTIAL_EDIT` or a timeout requires inspection of the clip list/recovery
+copies, or manual Live Undo; never blindly retry. Real Live acceptance remains
+pending, including native automation preservation and synchronous audio warping.
 
 Dataset/telemetry tools are optional and off by default. Music control requires
 no hosted backend or OpenAI API key. See [compatibility](compatibility.md) for the

@@ -1,7 +1,7 @@
-# AbletonCtrl 0.2
+# AbletonCtrl 0.3
 
 기존 [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp)의 기능을 유지하고
-Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 14개 = 51개 도구**를
+Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 17개 = 54개 도구**를
 하나의 MCP 서버와 하나의 Live Remote Script에서 제공합니다.
 
 **대상:** Ableton Live 12 Suite, Python 3.10 이상(외부 MCP 프로세스), Windows/macOS.
@@ -15,7 +15,7 @@ Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 14�
 | 기존 MCP | Session·트랙 조회, MIDI/오디오 트랙 생성, 이름 변경, Session MIDI/오디오 클립 생성·실행·정지·삭제, 노트 조회·추가·삭제 |
 | 장치·브라우저 | 파라미터 조회·변경, 브라우저 검색, 악기·이펙트·Drum Kit 로딩 |
 | 기존 Arrangement | View 전환, 재생 위치·Locator, Session 클립을 Arrangement에 복사, 목록·이름 변경 |
-| 확장 Arrangement | ID로 조회·선택, MIDI 클립 생성, 오디오 파일 가져오기, 같은 트랙 복제·이동·삭제, 이름·색상·음소거 변경 |
+| 확장 Arrangement | ID로 조회·선택, MIDI 생성, 오디오 가져오기, 동일/다른 트랙 복사·이동, 트리밍·리사이즈·삭제, 이름·색상·음소거 변경 |
 | 확장 MIDI 편집 | 노트 조회·추가, note_id로 일부 노트 수정·삭제 |
 | 선택적 데이터셋 | 원본 동의·의도·평가·선호·거절·청취 기록 도구 6개 유지. 기본 꺼짐, 음악 제어에 불필요 |
 
@@ -24,9 +24,13 @@ Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 14�
 마지막 클립 이후에서만 허용합니다. 원본 도구는 기존 입력·동작을 유지하므로 이 보호
 규칙이 원본 도구 전체에 적용되지는 않습니다.
 
-**제공하지 않는 작업:** 임의의 타임라인 트리밍/리사이즈, 겹치는 구간으로 이동,
-서로 다른 트랙 간 Arrangement 복사, Take Lane/Comping/오토메이션 편집, 자동 Set 저장.
-Live 공개 API의 제약은 [조사 문서](research.md)에 설명했습니다.
+트리밍·리사이즈는 절대 song beat로 양 끝을 지정합니다. 루프 클립 확장은 최대 64개의
+연속 클립으로 결과를 반환할 수 있습니다. 원본을 검증된 복사본으로 교체하므로 반환된
+모든 새 ID를 사용하세요. 오디오 트리밍에는 새 설치 도우미가 만드는 `silence.wav`가
+필요합니다. [타임라인 편집·복구 설명](timeline-editing.md)을 참고하세요.
+
+**제공하지 않는 작업:** 다른 클립을 덮어쓰는 편집, 원본과 겹치는 구간으로 이동,
+Take Lane/Comping/오토메이션 직접 편집, 자동 Set 저장.
 
 ## 가져다 사용하기
 
@@ -51,7 +55,8 @@ Control Surface에 `AbletonArrangementMCP`를 선택합니다. 기존 `AbletonMC
 
 - [설치·Codex 연결·기존 MCP에서 전환](setup.md)
 - [English quickstart](quickstart-en.md)
-- [51개 도구와 호출 예](tools.md)
+- [54개 도구와 호출 예](tools.md)
+- [타임라인 트리밍·리사이즈·트랙 간 복사와 복구](timeline-editing.md)
 - [원본 호환성·라이선스·선택적 데이터셋](compatibility.md)
 - [코드 구조·프로토콜·재사용](reuse.md)
 - [인터넷 조사와 근거](research.md)

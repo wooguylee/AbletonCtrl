@@ -1,4 +1,4 @@
-# 51개 MCP 도구
+# 54개 MCP 도구
 
 원본 37개는 이름·입력 schema·반환 규약을 유지합니다. 기존 원본 도구에 대한
 [호환 범위와 데이터셋 설정](compatibility.md)을 함께 확인하세요.
@@ -45,7 +45,7 @@
 | `reject_last_action` | `ctx: Context, reason: str='', user_prompt: str=''` |
 | `record_audition` | `ctx: Context, uri: str, kept: bool=False, search_query: str='', dwell_ms: float=0.0, user_prompt: str=''` |
 
-## 추가 Arrangement 도구 14개
+## 추가 Arrangement 도구 17개
 
 | 도구 | 설명 |
 | --- | --- |
@@ -57,7 +57,10 @@
 | `ableton_create_arrangement_midi_clip` | Create an empty MIDI Arrangement clip on an existing MIDI track. Refuse overlapping clips. |
 | `ableton_create_arrangement_audio_clip` | Import an existing absolute audio file on the Live PC at/after the track's LAST clip. Length depends on Live warp settings. |
 | `ableton_duplicate_arrangement_clip` | Duplicate a MIDI/audio Arrangement clip on the SAME track at a free song position in beats. |
-| `ableton_move_arrangement_clip` | Move on the SAME track by verified copy then delete in one Undo step. Return a NEW clip_id. Destination must not overlap any clip, including source; partial failures require inspection. |
+| `ableton_copy_arrangement_clip` | Copy to a matching MIDI/audio target track at a free position; preserve the original and return the new clip_id. |
+| `ableton_trim_arrangement_clip` | Keep an absolute song-beat range inside the original; return clips[] with new IDs. |
+| `ableton_resize_arrangement_clip` | Change either/both boundaries while preserving the content timeline. Looped extension returns up to 64 contiguous native segments. |
+| `ableton_move_arrangement_clip` | Verified native copy then source deletion. Optional target_track_id selects a matching track; return a NEW clip_id. Free destination required. |
 | `ableton_delete_arrangement_clip` | Delete the identified Arrangement clip from the current Set. Destructive; grouped for Live Undo. |
 | `ableton_get_midi_notes` | Read MIDI notes whose onset is in a clip-local beat range; narrow the range if truncated. |
 | `ableton_add_midi_notes` | Add 1-256 notes without replacing existing notes. start_time is clip-local beats; pitch is MIDI 0-127. |
@@ -98,12 +101,14 @@ ableton_create_arrangement_audio_clip {"track_id": "<audio_track_id>", "file_pat
 
 원본 get_* 출력은 JSON 문자열 또는 사람이 읽는 문자열입니다. 확장 도구는 JSON
 객체를 반환합니다. `ableton_move_arrangement_clip`이 반환하는 새 clip_id를 이후
-호출에 사용하세요. 노트 ID도 실제 조회 결과를 사용해야 합니다.
+호출에 사용하세요. 노트 ID도 실제 조회 결과를 사용해야 합니다. 트리밍·리사이즈는
+`clips[]`, `changed`, `warnings`를 반환하며 새 ID 전체를 확인해야 합니다.
+[새 도구의 인수·예시·편집 의미·복구](timeline-editing.md)를 참고하세요.
 
 ## 확장 도구의 제한과 실패
 
 - 이름 최대 256자, RGB 0..0xFFFFFF (Live가 가장 가까운 색으로 맞춤).
-- 생성·복제·이동은 동일 트랙의 기존 클립과 겹침을 거부. 이동 시 자기 원본과 겹쳐도 거부.
+- 생성·복제·복사·이동은 대상 트랙의 기존 클립과 겹침을 거부. 이동 시 자기 원본과 겹쳐도 거부.
 - 오디오 가져오기는 해당 Live PC의 실제 파일을 읽으며 트랙 마지막 클립 이후만 허용.
 - MIDI 추가·수정·삭제는 한 번에 1..256개, 노트 조회는 최대 1,000개.
   잘린 결과는 start_beats/length_beats 범위를 나눠 조회합니다.
@@ -111,4 +116,7 @@ ableton_create_arrangement_audio_clip {"track_id": "<audio_track_id>", "file_pat
 - move는 복제→검증→원본 삭제를 한 Undo 단계에 묶음. native 호출이 트랜잭션은
   아니므로 PARTIAL_MOVE/RESULT_UNCERTAIN 또는 timeout이면 목록을 다시 확인합니다.
 - 즉시 자동 재시도하거나 전체 Set을 자동 Undo/저장하지 않습니다.
-- 트리밍/리사이즈, 다른 트랙으로 Arrangement 복사, Take Lane/오토메이션 편집은 미제공.
+- trim/resize는 요청 범위가 다른 클립과 겹치면 거부. 루프 확장은 최대 64개 결과.
+  Unwarped audio 파일 경계 초과는 거부. 오디오 trim은 설치된 silence.wav가 필요.
+- PARTIAL_EDIT는 원본 교체 중 실패이며 복구용 음소거 복사본이 남을 수 있음.
+- Take Lane/Comping/오토메이션 직접 편집과 자동 Set 저장은 미제공.

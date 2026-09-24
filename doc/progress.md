@@ -44,3 +44,25 @@
 - Independent review fixed incorrect passive capability and unrelated-venv selection.
 - Real Live 12 Suite, macOS, optional backend acceptance remain unverified.
 - All records kept in doc; routine completion proceeds with commit/push to origin/main.
+
+## 0.3.0 timeline editing — 2026-09-24
+
+- User requested implementation of previously omitted trim/resize and cross-track copy.
+  Explained read-only timeline properties require composed native operations, not that
+  editing is impossible. Researched official LOM and primary implementation reports.
+- Added copy/trim/resize MCP tools; extended move with optional target track. Original
+  37 tool schemas/code remain unchanged. Total 54 tools.
+- Native staging, edge trim, marker resize, loop segment/intro/phase handling, full
+  backup and PARTIAL_EDIT recovery implemented. Audio helper WAV generated at install.
+- Initial missing-operation tests failed before implementation. Review regressions
+  exposed holding overlap, skipped loop intro, and wrong-length cover ownership;
+  reproduced and fixed. Reviewer confirmed no remaining code blockers.
+- Full 48 tests pass, including 19 timeline tests and original/extended same-connection
+  stdio/TCP integration. Actual Live/macOS verification remains outstanding.
+- Updated Korean/English install, use, reuse, research, recovery, memory and conversation
+  records in doc. User's active Set and User Library were not modified.
+- Final wheel 0.3.0 installed in separate venv: bundled source hashes, generated silent
+  WAV and real stdio 54-tool discovery passed. pip check, compileall, six-file native
+  Python 3.7 syntax parsing and documentation relative links passed.
+- Visible conversation export refreshed; no global memory write. origin/main was
+  fetched before delivery and matched the starting commit; no remote history replaced.

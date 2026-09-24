@@ -15,6 +15,7 @@ flowchart LR
 | `src/ableton_arrangement_mcp/server.py` | 타입·입력 스키마·MCP 도구·stdio 실행 |
 | `src/ableton_arrangement_mcp/client.py` | 로컬 TCP 요청·응답·제한 시간·오류 |
 | `remote_script/AbletonArrangementMCP/api.py` | Arrangement 대상 확인, 검증, Live API 호출 |
+| `remote_script/AbletonArrangementMCP/timeline.py` | 타임라인 편집 준비·native 가장자리 트림·마커 리사이즈·복구본 관리 |
 | `remote_script/AbletonArrangementMCP/transport.py` | 인증·프레임 처리·중복 ID·nonblocking 소켓 |
 | `remote_script/AbletonArrangementMCP/surface.py` | Live 진입, main-thread callback, 종료 |
 | `src/ableton_arrangement_mcp/installer.py` (`scripts/configure.py`에서 호출) | 설정 생성, 명시한 User Library 설치, 업데이트 백업 |
@@ -105,10 +106,18 @@ UTF-8 JSON + LF로 교환하고 연결을 닫습니다. 호스트는 `127.0.0.1`
 `end_time`에 직접 쓰지 않습니다. 오디오 import는 Live PC의 절대 파일 경로를 받고,
 길이가 사전에 확정되지 않으므로 트랙 마지막 클립 이후만 허용합니다.
 
-클라이언트 기본 응답 제한 시간은 10초, 오디오·일부 브라우저/스냅샷은 70초입니다.
+클라이언트 기본 응답 제한 시간은 10초, 오디오·일부 브라우저/스냅샷은 70초,
+타임라인 트리밍·리사이즈는 120초입니다.
 요청의 deadline은 **실행 시작 허용 시각**이며 작업 자체를 중단하는 시간이 아닙니다.
 긴 Live 호출 뒤 응답을 보낼 시간을 새로 부여합니다. 원본 복합 도구는 여러 bridge
 명령을 실행할 수 있으므로 MCP 클라이언트에는 180초 제한을 권장합니다.
+
+`TimelineEditor`는 `ArrangementAPI`의 `_space`, `_editable`, `_snapshot`, `_mutate`
+계약을 사용합니다. 다른 프로젝트에 옮길 때 `api.py`, `timeline.py`와 `silence_path`
+주입도 함께 유지해야 합니다. 오디오 보조 파일은 installer의 `write_silence`로 생성하며
+원본 음원을 재직렬화하지 않습니다. copy는 목적 트랙의 native duplicate를 호출합니다.
+trim/resize 결과는 단일 snapshot 대신 `clips[]`이므로 호출자는 모든 결과를 처리해야
+합니다. [동작·알려진 한계·복구](timeline-editing.md)를 함께 배포하세요.
 
 ## 대화와 메모리 기록
 

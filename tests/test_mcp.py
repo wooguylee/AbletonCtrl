@@ -44,7 +44,7 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
                     async with ClientSession(read, write) as session:
                         await session.initialize()
                         listing = await session.list_tools()
-                        self.assertEqual(len(listing.tools), 51)
+                        self.assertEqual(len(listing.tools), 54)
                         tools = {t.name: t for t in listing.tools}
                         self.assertTrue(tools["ableton_status"].annotations.readOnlyHint)
                         self.assertTrue(tools["ableton_delete_arrangement_clip"].annotations.destructiveHint)
@@ -100,6 +100,14 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
                         moved = await call("ableton_move_arrangement_clip", {"clip_id": clip, "destination_beats": 12})
                         clip = moved["clip_id"]
                         self.assertEqual(moved["start_beats"], 12)
+                        trimmed = await call("ableton_trim_arrangement_clip", {"clip_id": clip, "start_beats": 13, "end_beats": 15})
+                        clip = trimmed["clips"][0]["clip_id"]
+                        resized = await call("ableton_resize_arrangement_clip", {"clip_id": clip, "start_beats": 12, "end_beats": 18})
+                        clip = resized["clips"][0]["clip_id"]
+                        self.assertEqual(resized["clips"][0]["end_beats"], 18)
+                        target = (await call("ableton_list_tracks"))["tracks"][2]["track_id"]
+                        cross_copy = await call("ableton_copy_arrangement_clip", {"clip_id": clip, "target_track_id": target, "destination_beats": 8})
+                        self.assertEqual(cross_copy["track_id"], target)
                         stale = await session.call_tool("ableton_get_arrangement_clip", {"clip_id": copied["clip_id"]})
                         self.assertTrue(stale.isError)
                         invalid = await session.call_tool("ableton_add_midi_notes", {"clip_id": clip, "notes": [{"pitch": 128, "start_time": 0, "duration": 1}]})

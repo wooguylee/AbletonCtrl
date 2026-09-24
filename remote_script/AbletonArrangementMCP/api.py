@@ -33,13 +33,15 @@ def require_method(obj, name):
 class ArrangementAPI:
     METHODS = ("status", "list_tracks", "list_clips", "get_clip", "update_clip",
                "create_midi_clip", "create_audio_clip", "duplicate_clip", "move_clip",
-               "delete_clip", "get_notes", "add_notes", "update_notes", "delete_notes")
+               "delete_clip", "get_notes", "add_notes", "update_notes", "delete_notes",
+               "copy_clip", "trim_clip", "resize_clip")
 
-    def __init__(self, song, version, note_factory):
+    def __init__(self, song, version, note_factory, silence_path=None):
         self.song = song
         self.version = version
         self.note_factory = note_factory
         self.handles = OrderedDict()
+        self.silence_path = silence_path
 
     def call(self, method, params):
         if method not in self.METHODS:
@@ -128,7 +130,7 @@ class ArrangementAPI:
         return items[offset:offset + limit]
 
     def status(self):
-        return {"bridge_version": "0.2.0", "live_version": self.version,
+        return {"bridge_version": "0.3.0", "live_version": self.version,
                 "time_unit": "beats", "tempo": self.song.tempo,
                 "time_signature": [self.song.signature_numerator, self.song.signature_denominator],
                 "is_playing": bool(self.song.is_playing), "track_count": len(self.song.tracks),
@@ -178,11 +180,13 @@ class ArrangementAPI:
             return self._snapshot(track, clip)
         return self._mutate(apply)
 
-    def _space(self, track, start, length):
+    def _space(self, track, start, length, exclude=None):
         number(start, "start_beats")
         number(length, "length_beats", positive=True)
         number(start + length, "end_beats")
         for clip in self._clips(track):
+            if clip == exclude:
+                continue
             if start < clip.end_time and start + length > clip.start_time:
                 raise BridgeError("OVERLAP", "Destination overlaps an existing Arrangement clip")
 
@@ -207,10 +211,36 @@ class ArrangementAPI:
 
     def duplicate_clip(self, clip_id, destination_beats):
         track, clip = self._resolve(clip_id, "clip")
-        self._editable(track, clip)
-        duplicate = require_method(track, "duplicate_clip_to_arrangement")
-        self._space(track, destination_beats, clip.end_time - clip.start_time)
-        return self._insert(track, lambda: duplicate(clip, float(destination_beats)))
+        return self.copy_clip(clip_id, self._handle("track", track), destination_beats)
+
+    def _copy_target(self, source_track, clip, target_track_id):
+        target = self._resolve(target_track_id, "track")
+        if target.is_foldable or not (target.has_midi_input if clip.is_midi_clip else target.has_audio_input):
+            raise BridgeError("WRONG_TRACK_TYPE", "Source clip and destination track type must match")
+        self._editable(source_track, clip)
+        self._editable(target)
+        require_method(target, "duplicate_clip_to_arrangement")
+        return target
+
+    def copy_clip(self, clip_id, target_track_id, destination_beats):
+        from .timeline import TimelineEditor
+        source_track, clip = self._resolve(clip_id, "clip")
+        target = self._copy_target(source_track, clip, target_track_id)
+        self._space(target, destination_beats, clip.end_time - clip.start_time)
+        def apply():
+            copied = TimelineEditor(self, target).duplicate(clip, destination_beats)
+            return self._snapshot(target, copied)
+        return self._mutate(apply)
+
+    def trim_clip(self, clip_id, start_beats, end_beats):
+        from .timeline import TimelineEditor
+        track, clip = self._resolve(clip_id, "clip")
+        return TimelineEditor(self, track).edit(clip_id, clip, start_beats, end_beats, trim_only=True)
+
+    def resize_clip(self, clip_id, start_beats=None, end_beats=None):
+        from .timeline import TimelineEditor
+        track, clip = self._resolve(clip_id, "clip")
+        return TimelineEditor(self, track).edit(clip_id, clip, start_beats, end_beats)
 
     def create_audio_clip(self, track_id, file_path, start_beats):
         track = self._resolve(track_id, "track")
@@ -226,25 +256,25 @@ class ArrangementAPI:
             raise BridgeError("OVERLAP", "Import audio at or after the last clip on this track")
         return self._insert(track, lambda: create(file_path, float(start_beats)))
 
-    def move_clip(self, clip_id, destination_beats):
+    def move_clip(self, clip_id, destination_beats, target_track_id=None):
         track, clip = self._resolve(clip_id, "clip")
-        self._editable(track, clip)
+        target = self._copy_target(track, clip, target_track_id or self._handle("track", track))
         number(destination_beats, "destination_beats")
-        if destination_beats == clip.start_time:
+        if target == track and destination_beats == clip.start_time:
             return self._snapshot(track, clip)
-        duplicate = require_method(track, "duplicate_clip_to_arrangement")
+        duplicate = require_method(target, "duplicate_clip_to_arrangement")
         delete = require_method(track, "delete_clip")
         length = clip.end_time - clip.start_time
-        self._space(track, destination_beats, length)
-        before = self._clips(track)
+        self._space(target, destination_beats, length)
+        before = self._clips(target)
         def apply():
             duplicate(clip, float(destination_beats))
-            added = [c for c in self._clips(track) if c not in before]
+            added = [c for c in self._clips(target) if c not in before]
             if (len(added) != 1 or not math.isclose(added[0].start_time, destination_beats, abs_tol=1e-6)
                     or not math.isclose(added[0].end_time - added[0].start_time, length, abs_tol=1e-6)
                     or added[0].is_midi_clip != clip.is_midi_clip):
                 raise BridgeError("RESULT_UNCERTAIN", "Could not verify the copy; original preserved. List clips before retrying")
-            copied = self._snapshot(track, added[0])
+            copied = self._snapshot(target, added[0])
             try:
                 delete(clip)
             except Exception as exc:

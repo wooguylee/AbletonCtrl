@@ -53,7 +53,8 @@ def create_server(client: BridgeClient) -> FastMCP:
         "For ableton_ prefixed tools, first list tracks and clips; "
         "use returned opaque handles, never guessed indices. Song positions are zero-based quarter-note beats. "
         "MIDI note positions are clip-local beats. No automatic retries after timeout: inspect state. "
-        "Creation/duplication rejects overlaps. Do not describe writes as saved to disk. "
+        "Creation/duplication rejects overlaps. Timeline trim/resize stages copies and may return multiple clips. "
+        "Use all returned new clip IDs; PARTIAL_EDIT requires recovery inspection. Do not describe writes as saved to disk. "
         "Changing metadata is not moving or trimming clips. Live Undo is available but edits are not transactions."))
 
     async def call(method, **params):
@@ -102,10 +103,25 @@ def create_server(client: BridgeClient) -> FastMCP:
         """Duplicate a MIDI/audio Arrangement clip on the SAME track at a free song position in beats."""
         return await call("duplicate_clip", clip_id=clip_id, destination_beats=destination_beats)
 
+    @mcp.tool(annotations=ADD)
+    async def ableton_copy_arrangement_clip(clip_id: str, target_track_id: str, destination_beats: Beat) -> dict[str, Any]:
+        """Copy a MIDI/audio Arrangement clip to a matching destination track at a free position. Preserve the original and native clip data; return the new clip_id."""
+        return await call("copy_clip", clip_id=clip_id, target_track_id=target_track_id, destination_beats=destination_beats)
+
     @mcp.tool(annotations=DELETE)
-    async def ableton_move_arrangement_clip(clip_id: str, destination_beats: Beat) -> dict[str, Any]:
-        """Move on the SAME track by verified copy then delete in one Undo step. Return a NEW clip_id. Destination must not overlap any clip, including source; partial failures require inspection."""
-        return await call("move_clip", clip_id=clip_id, destination_beats=destination_beats)
+    async def ableton_trim_arrangement_clip(clip_id: str, start_beats: Beat, end_beats: Beat) -> dict[str, Any]:
+        """Keep an absolute song-beat range INSIDE an Arrangement clip. Stage native edge trims, replace original, return clips[]. Audio uses temporary silent Session material. On PARTIAL_EDIT inspect muted recovery copies or Live Undo."""
+        return await asyncio.to_thread(client.call, "trim_clip", {"clip_id": clip_id, "start_beats": start_beats, "end_beats": end_beats}, timeout=120)
+
+    @mcp.tool(annotations=DELETE)
+    async def ableton_resize_arrangement_clip(clip_id: str, start_beats: Beat | None = None, end_beats: Beat | None = None) -> dict[str, Any]:
+        """Change either/both Arrangement boundaries in song beats, preserving the content timeline (not time-stretching). Unlooped clips expose hidden content; looped extension returns up to 64 contiguous native segments with continuous loop phase. Unwarped audio cannot exceed its file. Return clips[] with NEW IDs. Other clips must not overlap; failures may retain muted recovery copies."""
+        return await asyncio.to_thread(client.call, "resize_clip", {"clip_id": clip_id, "start_beats": start_beats, "end_beats": end_beats}, timeout=120)
+
+    @mcp.tool(annotations=DELETE)
+    async def ableton_move_arrangement_clip(clip_id: str, destination_beats: Beat, target_track_id: str | None = None) -> dict[str, Any]:
+        """Move by verified native copy then delete in one Undo step. Omit target_track_id for the same track or supply a matching track. Return a NEW clip_id. Destination must not overlap any clip, including source; partial failures require inspection."""
+        return await call("move_clip", clip_id=clip_id, destination_beats=destination_beats, target_track_id=target_track_id)
 
     @mcp.tool(annotations=DELETE)
     async def ableton_delete_arrangement_clip(clip_id: str) -> dict[str, Any]:

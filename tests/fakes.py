@@ -15,12 +15,23 @@ class Clip:
         self.is_arrangement_clip = True
         self.is_recording = False
         self.is_playing = False
+        self.warping = False
         self.loop_start = 0.0
         self.loop_end = length
         self.start_marker = 0.0
         self.end_marker = length
         self.looping = False
         self.notes = []
+
+    def __setattr__(self, key, value):
+        if key == 'loop_end' and getattr(self, '_native_edit', False) and getattr(self, 'is_audio_clip', False) and not self.warping:
+            value = min(value, getattr(self, 'sample_length', 10**9) / float(getattr(self, 'sample_rate', 1)))
+        object.__setattr__(self, key, value)
+        if key in ('loop_start', 'loop_end') and hasattr(self, 'loop_end') and hasattr(self, 'loop_start'):
+            units = 1 if self.is_midi_clip or self.warping else getattr(self, 'seconds_per_beat', 0.5)
+            object.__setattr__(self, 'length', (self.loop_end - self.loop_start) / units)
+            if getattr(self, '_native_edit', False) and not self.looping and not getattr(self, 'ignore_resize', False):
+                object.__setattr__(self, 'end_time', self.start_time + self.length)
 
     def set_notes(self, notes):
         self.add_new_notes([SimpleNamespace(pitch=n[0], start_time=n[1], duration=n[2], velocity=n[3], mute=n[4]) for n in notes])
@@ -93,14 +104,41 @@ class Track:
         self.arrangement_clips = [Clip(midi=midi)]
 
     def create_midi_clip(self, start, length):
+        self._overwrite(start, start + length)
         self.arrangement_clips.append(Clip(start, length))
         # Native mutators may return None: callers must inspect actual state.
 
     def duplicate_clip_to_arrangement(self, clip, position):
         copied = deepcopy(clip)
+        size = clip.end_time - clip.start_time if clip.is_arrangement_clip else clip.length
+        if clip.is_arrangement_clip and any(position < c.end_time and position + size > c.start_time for c in self.arrangement_clips):
+            raise RuntimeError('Arrangement-source duplication into occupied range is unsafe')
+        self._overwrite(position, position + size)
         copied.start_time = position
-        copied.end_time = position + clip.end_time - clip.start_time
+        copied.end_time = position + size
+        copied.is_arrangement_clip = True
+        copied._native_edit = True
         self.arrangement_clips.append(copied)
+
+    def _overwrite(self, start, end):
+        for clip in list(self.arrangement_clips):
+            if start >= clip.end_time or end <= clip.start_time:
+                continue
+            if start <= clip.start_time:
+                if end >= clip.end_time:
+                    self.arrangement_clips.remove(clip)
+                else:
+                    delta = end - clip.start_time
+                    units = 1 if clip.is_midi_clip or clip.warping else getattr(clip, 'seconds_per_beat', 0.5)
+                    object.__setattr__(clip, 'start_time', end)
+                    object.__setattr__(clip, 'start_marker', clip.start_marker + delta * units)
+                    if not clip.looping:
+                        object.__setattr__(clip, 'loop_start', clip.loop_start + delta * units)
+            else:
+                object.__setattr__(clip, 'end_time', start)
+                if not clip.looping:
+                    units = 1 if clip.is_midi_clip or clip.warping else getattr(clip, 'seconds_per_beat', 0.5)
+                    object.__setattr__(clip, 'loop_end', clip.loop_start + (start-clip.start_time) * units)
 
     def delete_clip(self, clip):
         self.arrangement_clips.remove(clip)

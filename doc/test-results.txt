@@ -17,6 +17,25 @@ test_failed_update_preserves_working_configuration (test_helpers.HelperTests.tes
 test_installer_uses_its_own_python_not_an_unrelated_project_venv (test_helpers.HelperTests.test_installer_uses_its_own_python_not_an_unrelated_project_venv) ... ok
 test_stdio_discovery_and_clip_lifecycle (test_mcp.MCPTests.test_stdio_discovery_and_clip_lifecycle) ... ok
 test_legacy_and_arrangement_dispatch_on_same_main_thread (test_surface.SurfaceTests.test_legacy_and_arrangement_dispatch_on_same_main_thread) ... ok
+test_audio_copy_and_cross_track_move (test_timeline.TimelineTests.test_audio_copy_and_cross_track_move) ... ok
+test_audio_trim_and_unwarped_resize_units (test_timeline.TimelineTests.test_audio_trim_and_unwarped_resize_units) ... ok
+test_audio_trim_with_full_session_restores_scene_and_existing_clips (test_timeline.TimelineTests.test_audio_trim_with_full_session_restores_scene_and_existing_clips) ... ok
+test_copy_across_tracks_preserves_original_and_native_payload (test_timeline.TimelineTests.test_copy_across_tracks_preserves_original_and_native_payload) ... ok
+test_copy_rejects_type_mismatch_and_occupied_target (test_timeline.TimelineTests.test_copy_rejects_type_mismatch_and_occupied_target) ... ok
+test_final_placement_failure_retains_full_backup (test_timeline.TimelineTests.test_final_placement_failure_retains_full_backup) ... ok
+test_frozen_and_recording_targets_rejected_before_writes (test_timeline.TimelineTests.test_frozen_and_recording_targets_rejected_before_writes) ... ok
+test_holding_area_stays_beyond_the_entire_requested_expansion (test_timeline.TimelineTests.test_holding_area_stays_beyond_the_entire_requested_expansion) ... ok
+test_invalid_trim_and_expansion_overlap_do_not_write (test_timeline.TimelineTests.test_invalid_trim_and_expansion_overlap_do_not_write) ... ok
+test_loop_intro_is_played_before_wrapping_into_loop (test_timeline.TimelineTests.test_loop_intro_is_played_before_wrapping_into_loop) ... ok
+test_loop_segment_limit_and_tiny_positive_range (test_timeline.TimelineTests.test_loop_segment_limit_and_tiny_positive_range) ... ok
+test_noop_and_ignored_native_resize (test_timeline.TimelineTests.test_noop_and_ignored_native_resize) ... ok
+test_original_delete_failure_keeps_source_and_backup (test_timeline.TimelineTests.test_original_delete_failure_keeps_source_and_backup) ... ok
+test_resize_looped_retains_phase_across_partial_cycle (test_timeline.TimelineTests.test_resize_looped_retains_phase_across_partial_cycle) ... ok
+test_resize_unlooped_exposes_hidden_content_both_sides (test_timeline.TimelineTests.test_resize_unlooped_exposes_hidden_content_both_sides) ... ok
+test_staging_duplicate_wrong_length_cleans_owned_copy (test_timeline.TimelineTests.test_staging_duplicate_wrong_length_cleans_owned_copy) ... ok
+test_trim_both_edges_preserves_neighbors_and_content (test_timeline.TimelineTests.test_trim_both_edges_preserves_neighbors_and_content) ... ok
+test_unwarped_file_boundary_and_missing_silence_preserve_source (test_timeline.TimelineTests.test_unwarped_file_boundary_and_missing_silence_preserve_source) ... ok
+test_wrong_length_audio_cover_is_cleaned_before_failure (test_timeline.TimelineTests.test_wrong_length_audio_cover_is_cleaned_before_failure) ... ok
 test_auth_expiry_and_unknown_method (test_transport.TransportTests.test_auth_expiry_and_unknown_method) ... ok
 test_client_and_remote_error (test_transport.TransportTests.test_client_and_remote_error) ... ok
 test_client_timeout_has_no_retry (test_transport.TransportTests.test_client_timeout_has_no_retry) ... ok
@@ -24,14 +43,14 @@ test_fragmented_frame_roundtrip (test_transport.TransportTests.test_fragmented_f
 test_malformed_frame_does_not_kill_server (test_transport.TransportTests.test_malformed_frame_does_not_kill_server) ... ok
 test_oversized_frame_is_disconnected (test_transport.TransportTests.test_oversized_frame_is_disconnected) ... ok
 test_reused_request_id_is_not_executed_again (test_transport.TransportTests.test_reused_request_id_is_not_executed_again) ... ok
-test_every_upstream_tool_and_parameter_is_preserved (test_upstream.UpstreamParityTests.test_every_upstream_tool_and_parameter_is_preserved) ... 2026-09-24 23:13:34,914 - asyncio - WARNING - Executing <Task finished name='Task-8' coro=<UpstreamParityTests.test_every_upstream_tool_and_parameter_is_preserved() done, defined at Z:\Work\WorkAI\AbletonCtrl\tests\test_upstream.py:20> result=None created at C:\Users\Administrator\AppData\Local\Python\pythoncore-3.12-64\Lib\asyncio\runners.py:100> took 0.141 seconds
+test_every_upstream_tool_and_parameter_is_preserved (test_upstream.UpstreamParityTests.test_every_upstream_tool_and_parameter_is_preserved) ... 2026-09-24 23:42:35,616 - asyncio - WARNING - Executing <Task finished name='Task-8' coro=<UpstreamParityTests.test_every_upstream_tool_and_parameter_is_preserved() done, defined at Z:\Work\WorkAI\AbletonCtrl\tests\test_upstream.py:20> result=None created at C:\Users\Administrator\AppData\Local\Python\pythoncore-3.12-64\Lib\asyncio\runners.py:100> took 0.141 seconds
 ok
-test_preserved_tool_uses_authenticated_bridge_command (test_upstream.UpstreamParityTests.test_preserved_tool_uses_authenticated_bridge_command) ... 2026-09-24 23:13:35,004 - AbletonMCPServer - INFO - Remote Script handshake OK (v1.7.1, 1 capabilities)
-2026-09-24 23:13:35,006 - ableton-mcp-telemetry - INFO - Telemetry disabled via environment variable
+test_preserved_tool_uses_authenticated_bridge_command (test_upstream.UpstreamParityTests.test_preserved_tool_uses_authenticated_bridge_command) ... 2026-09-24 23:42:35,712 - AbletonMCPServer - INFO - Remote Script handshake OK (v1.7.1, 1 capabilities)
+2026-09-24 23:42:35,714 - ableton-mcp-telemetry - INFO - Telemetry disabled via environment variable
 ok
 test_vendored_sources_match_pinned_hashes (test_upstream.UpstreamParityTests.test_vendored_sources_match_pinned_hashes) ... ok
 
 ----------------------------------------------------------------------
-Ran 29 tests in 4.089s
+Ran 48 tests in 4.180s
 
 OK

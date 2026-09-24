@@ -41,7 +41,8 @@ class ArrangementSurface(AbletonMCP):
             application = Live.Application.get_application()
             version = "%s.%s.%s" % (application.get_major_version(), application.get_minor_version(),
                                     application.get_bugfix_version())
-            self._api = ArrangementAPI(self.song(), version, getattr(Live.Clip, "MidiNoteSpecification", None))
+            self._api = ArrangementAPI(self.song(), version, getattr(Live.Clip, "MidiNoteSpecification", None),
+                                       os.path.join(os.path.dirname(__file__), "silence.wav"))
             port = config.get("port", 8765)
             if type(port) is not int or not 1024 <= port <= 65535:
                 raise ValueError("port must be between 1024 and 65535")
@@ -103,6 +104,6 @@ class ArrangementSurface(AbletonMCP):
             capabilities.discard("drain_passive_events")
         info.update(name="AbletonCtrl", port=self._bridge.port,
                     capabilities=sorted(capabilities), passive_listeners=self._capture_passive,
-                    abletonctrl_version="0.2.0", upstream_commit="9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
+                    abletonctrl_version="0.3.0", upstream_commit="9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
                     arrangement_methods=list(self._api.METHODS))
         return info

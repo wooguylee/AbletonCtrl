@@ -5,10 +5,22 @@ import json
 import secrets
 import shutil
 import sys
+import wave
 from pathlib import Path
 from importlib.resources import files
 
 SCRIPT_NAME = "AbletonArrangementMCP"
+
+
+def write_silence(path):
+    """Generate a deterministic one-second PCM helper, with no source-media dependency."""
+    temporary = path.with_suffix(".wav.tmp")
+    with wave.open(str(temporary), "wb") as output:
+        output.setnchannels(1)
+        output.setsampwidth(2)
+        output.setframerate(22050)
+        output.writeframes(b"\0" * 44100)
+    temporary.replace(path)
 
 
 def configure(root=None, user_library=None, port=None, replace=False):
@@ -49,6 +61,7 @@ def configure(root=None, user_library=None, port=None, replace=False):
             source = Path(str(files("ableton_arrangement_mcp.live_script")))
         shutil.copytree(source, target, dirs_exist_ok=replace,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "config.json"))
+        write_silence(target / "silence.wav")
         # Commit connection settings only after destination validation and source copy succeed.
         installed_temp = target / "config.json.tmp"
         installed_temp.write_text(config_text, encoding="utf-8")
