@@ -1,0 +1,25 @@
+test_create_duplicate_delete_and_undo (test_api.APITests.test_create_duplicate_delete_and_undo) ... ok
+test_frozen_recording_and_wrong_type (test_api.APITests.test_frozen_recording_and_wrong_type) ... ok
+test_handle_survives_reorder_but_rejects_deleted_clip (test_api.APITests.test_handle_survives_reorder_but_rejects_deleted_clip) ... ok
+test_invalid_numbers_and_unknown_fields_rejected (test_api.APITests.test_invalid_numbers_and_unknown_fields_rejected) ... ok
+test_missing_capability_is_explicit (test_api.APITests.test_missing_capability_is_explicit) ... ok
+test_native_error_closes_undo_step (test_api.APITests.test_native_error_closes_undo_step) ... ok
+test_notes_use_clip_time_and_midi_spec_objects (test_api.APITests.test_notes_use_clip_time_and_midi_spec_objects) ... ok
+test_overlap_rejected_without_changing_set (test_api.APITests.test_overlap_rejected_without_changing_set) ... ok
+test_removed_track_invalidates_clip (test_api.APITests.test_removed_track_invalidates_clip) ... ok
+test_status_and_pagination (test_api.APITests.test_status_and_pagination) ... ok
+test_export_keeps_request_after_metadata_and_excludes_hidden_content (test_helpers.HelperTests.test_export_keeps_request_after_metadata_and_excludes_hidden_content) ... ok
+test_failed_update_preserves_working_configuration (test_helpers.HelperTests.test_failed_update_preserves_working_configuration) ... ok
+test_stdio_discovery_and_clip_lifecycle (test_mcp.MCPTests.test_stdio_discovery_and_clip_lifecycle) ... ok
+test_auth_expiry_and_unknown_method (test_transport.TransportTests.test_auth_expiry_and_unknown_method) ... ok
+test_client_and_remote_error (test_transport.TransportTests.test_client_and_remote_error) ... ok
+test_client_timeout_has_no_retry (test_transport.TransportTests.test_client_timeout_has_no_retry) ... ok
+test_fragmented_frame_roundtrip (test_transport.TransportTests.test_fragmented_frame_roundtrip) ... ok
+test_malformed_frame_does_not_kill_server (test_transport.TransportTests.test_malformed_frame_does_not_kill_server) ... ok
+test_oversized_frame_is_disconnected (test_transport.TransportTests.test_oversized_frame_is_disconnected) ... ok
+test_reused_request_id_is_not_executed_again (test_transport.TransportTests.test_reused_request_id_is_not_executed_again) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 1.962s
+
+OK

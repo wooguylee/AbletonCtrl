@@ -1,0 +1,11 @@
+.venv/
+.codex/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+doc/local/
+doc/conversations/*.jsonl
+remote_script/AbletonArrangementMCP/config.json
