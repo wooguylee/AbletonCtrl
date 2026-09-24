@@ -16,6 +16,8 @@ flowchart LR
 | `src/ableton_arrangement_mcp/client.py` | 로컬 TCP 요청·응답·제한 시간·오류 |
 | `remote_script/AbletonArrangementMCP/api.py` | Arrangement 대상 확인, 검증, Live API 호출 |
 | `remote_script/AbletonArrangementMCP/timeline.py` | 타임라인 편집 준비·native 가장자리 트림·마커 리사이즈·복구본 관리 |
+| `remote_script/AbletonArrangementMCP/deferred.py` | main-thread generator continuation; native 갱신을 다음 tick에서 재검증 |
+| `remote_script/AbletonArrangementMCP/locators.py` | 원본 Locator 명령의 지연 처리와 기존 항목 삭제 방지 |
 | `remote_script/AbletonArrangementMCP/transport.py` | 인증·프레임 처리·중복 ID·nonblocking 소켓 |
 | `remote_script/AbletonArrangementMCP/surface.py` | Live 진입, main-thread callback, 종료 |
 | `src/ableton_arrangement_mcp/installer.py` (`scripts/configure.py`에서 호출) | 설정 생성, 명시한 User Library 설치, 업데이트 백업 |
@@ -138,3 +140,16 @@ trim/resize 결과는 단일 snapshot 대신 `clips[]`이므로 호출자는 모
 진행 중 로그의 마지막 미완성 줄은 건너뛰므로 종료 후 다시 실행하면 추가 메시지를
 반영할 수 있습니다. 공개 메시지에 사용자가 직접 쓴 민감정보까지 자동 익명화하는
 기능은 없으므로 대화 파일은 공유 전에 검토하세요.
+
+## 0.3.1 native 지연 처리 재사용
+
+`api.py`와 `timeline.py`만 복사하지 말고 `deferred.py`, `transport.py`, `surface.py`,
+`locators.py`도 함께 가져오세요. `_mutate()`는 동기 결과 또는 `Deferred`를 반환하고,
+transport는 후자를 다음 `update_display()`에서 재개합니다. 하나의 대기 작업 중 다른
+MCP 요청은 실행하지 않습니다. Live 객체에 worker thread나 sleep을 사용하지 않습니다.
+대기 timeout/종료는 generator를 닫아 소유한 임시 자료 정리와 Undo 종료를 시도합니다.
+응답 손실은 자동 재시도하지 않습니다. UI 변경까지 직렬화하지는 않습니다.
+
+`scripts/live_acceptance.py`는 실제 MCP stdio 클라이언트로 호출하는 재사용 가능한
+검증 도구입니다. 기본은 읽기만, `--run-writes`는 별도 Set에 테스트 트랙 5개를
+추가합니다. [실행법·제한](live-verification-2026-09-25.md)을 먼저 확인하세요.

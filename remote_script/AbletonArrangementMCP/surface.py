@@ -87,6 +87,9 @@ class ArrangementSurface(AbletonMCP):
             command = method[len("upstream."):]
             if command not in UPSTREAM_COMMANDS or not isinstance(params, dict):
                 raise BridgeError("UNKNOWN_METHOD", "Unsupported upstream command")
+            if command == "create_locator":
+                from .locators import create_locator
+                return create_locator(self._api, params.get("name", ""), params.get("time", 0))
             self._dispatching_upstream = True
             try:
                 response = self._process_command({"type": command, "params": params})
@@ -104,6 +107,6 @@ class ArrangementSurface(AbletonMCP):
             capabilities.discard("drain_passive_events")
         info.update(name="AbletonCtrl", port=self._bridge.port,
                     capabilities=sorted(capabilities), passive_listeners=self._capture_passive,
-                    abletonctrl_version="0.3.0", upstream_commit="9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
+                    abletonctrl_version="0.3.1", upstream_commit="9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
                     arrangement_methods=list(self._api.METHODS))
         return info

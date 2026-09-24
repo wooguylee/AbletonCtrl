@@ -106,6 +106,38 @@ class TransportTests(unittest.TestCase):
             self.assertEqual(sock.recv(1), b"")
         self.assertEqual(self.song.undo_count, 0)
 
+    def test_deferred_response_completes_on_later_polls_same_thread(self):
+        from remote_script.AbletonArrangementMCP.deferred import Deferred
+        owners = []
+        def action():
+            owners.append(threading.get_ident())
+            yield
+            owners.append(threading.get_ident())
+            return {'completed': True}
+        self.bridge.handler = lambda *_: Deferred(action()).advance()
+        reply = self.raw((json.dumps(self.request()) + '\n').encode())
+        self.assertEqual(reply['result'], {'completed': True})
+        self.assertEqual(owners, [self.worker.ident, self.worker.ident])
+
+    def test_close_cancels_pending_action_and_runs_cleanup(self):
+        from remote_script.AbletonArrangementMCP.deferred import Deferred
+        self.stop.set()
+        self.worker.join(2)
+        cleaned = []
+        def action():
+            try:
+                while True:
+                    yield
+            finally:
+                cleaned.append(True)
+        self.bridge.handler = lambda *_: Deferred(action()).advance()
+        with socket.create_connection(('127.0.0.1', self.port), 2) as sock:
+            sock.sendall((json.dumps(self.request())+'\n').encode())
+            self.bridge.poll()
+            self.assertEqual(cleaned, [])
+            self.bridge.close()
+        self.assertEqual(cleaned, [True])
+
 
 if __name__ == "__main__":
     unittest.main()

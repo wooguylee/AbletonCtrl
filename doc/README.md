@@ -5,8 +5,9 @@ Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 17�
 하나의 MCP 서버와 하나의 Live Remote Script에서 제공합니다.
 
 **대상:** Ableton Live 12 Suite, Python 3.10 이상(외부 MCP 프로세스), Windows/macOS.
-자동 테스트와 Windows 패키지 설치를 검증했습니다. **실제 Live 및 macOS 구동 검증은
-아직 남아 있습니다.** 기능과 입력 규약 보존이 모든 Live 버전의 실행 성공을 뜻하지는 않습니다.
+Windows의 **Live 12.4.6 Suite 실기 검증**을 수행했습니다. 도구 54개와 필수 Arrangement
+시나리오 결과는 [실기 보고서](live-verification-2026-09-25.md)에 있습니다.
+macOS와 선택적 외부 데이터셋 업로드는 검증하지 않았습니다.
 
 ## 기능
 
@@ -31,6 +32,11 @@ Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 17�
 
 **제공하지 않는 작업:** 다른 클립을 덮어쓰는 편집, 원본과 겹치는 구간으로 이동,
 Take Lane/Comping/오토메이션 직접 편집, 자동 Set 저장.
+
+0.3.1 제한: Warp 꺼진 오디오의 지연 리사이즈는 Undo가 여러 단계로 나뉠 수 있으며,
+클립 envelope가 있는 지연 리사이즈는 거부합니다. Locator는 기존 항목 이름 변경과
+첫 항목 생성만 허용합니다. 추가 생성은 Live에서 직접 하세요. 그리드 스냅으로
+기존 Locator가 삭제되는 native 동작을 방지하기 위한 제한입니다.
 
 ## 가져다 사용하기
 

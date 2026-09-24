@@ -128,7 +128,7 @@ Arrangement 제어가 보장되지는 않으며, 선택한 서버가 필요한 �
 3. 클라이언트의 기존 `ableton-mcp`/`uvx ableton-mcp` 서버 등록을 해제합니다.
 4. 생성된 `abletonctrl` MCP 항목을 등록합니다. 기존 0.1 버전의
    `ableton_arrangement` 항목이 있으면 이 항목으로 교체합니다.
-5. 새 MCP 세션에서 54개 도구, `ableton_status` 버전 0.3.0,
+5. 새 MCP 세션에서 54개 도구, `ableton_status` 버전 0.3.1,
    `get_remote_script_info`의 name AbletonCtrl과 원본 commit을 확인합니다.
 
 원본 도구의 이름·입력 형식은 유지하지만 네트워크 프로토콜은 바뀌었습니다.
@@ -148,4 +148,4 @@ Live를 종료하고 `git pull`, `.venv\Scripts\python -m pip install .` 후 설
 `doc/local/backups/`에 백업되고 토큰은 유지됩니다. 이번 버전은 오디오 트리밍에
 사용할 1초 PCM 무음 파일 `silence.wav`도 설치 폴더에 생성합니다. MCP 서버만
 업데이트하면 새 native 명령/파일을 사용할 수 없으므로 Remote Script도 교체하세요.
-Live와 MCP 클라이언트를 다시 시작한 뒤 버전 0.3.0을 확인합니다.
+Live와 MCP 클라이언트를 다시 시작한 뒤 버전 0.3.1을 확인합니다.

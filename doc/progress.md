@@ -80,3 +80,15 @@
   and silence asset. Did not operate or launch Live during the rename task.
 - 10 targeted tests passed; rebuilt and installed wheel in separate venv, verified
   new folder name and 54-tool discovery. Raw visible transcript export refreshed.
+
+## 0.3.1 native Live acceptance — 2026-09-25
+
+- User activated AbletonVVoori and authorized full real testing, Arrangement mandatory.
+- Live 12.4.6 Suite dedicated Set testing found deferred unwarped length updates.
+  Fixed main-thread continuation, source rechecks, cleanup, and envelope guard.
+- Verified MIDI/warped/unwarped trimming, expansion, cross-track copying/moving,
+  full Session slots cleanup and native Undo/Redo (unwarped deferred: two steps).
+- Locator grid snap can delete an existing cue. Added first-only/new-cue guard,
+  keeping near-existing rename. Additional locator creation requires Live UI.
+- 61 automatic tests pass. Reusable MCP stdio native runner and current reports added.
+- See live-verification-2026-09-25.md for final evidence and unverified areas.

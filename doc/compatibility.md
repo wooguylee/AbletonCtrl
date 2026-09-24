@@ -68,3 +68,12 @@ Arrangement 클립 삭제입니다. 기존 `duplicate_to_arrangement`도 그대�
 보냅니다. 개인정보·토큰은 커밋하지 않습니다. 실제 backend 업로드와 Live 수집은
 이번 검증에 포함되지 않습니다. 새 Arrangement 도구의 실행은 원본 dataset action
 분류에 별도 추가하지 않았으며, 원본 snapshot에서 현재 Arrangement 상태를 조회할 수 있습니다.
+
+## 0.3.1 Live 실기에서 확인한 차이
+
+원본 vendor 파일과 37개 입력 schema는 그대로 보존했습니다. 다만 통합 surface의
+`create_locator`는 안전한 adapter를 사용합니다. 기존 Locator 이름 변경과 첫 생성만
+허용하고, 이미 다른 Locator가 있는 추가 생성은 거부합니다. Live 12.4.6의 editing-grid
+스냅이 생성 명령을 기존 Locator 삭제로 바꾸는 현상을 재현했기 때문입니다.
+첫 생성은 정지 상태에서 수행하며 실제 스냅 위치를 반환합니다. 이름 변경의 원본
+허용 오차(0.001 beat)는 유지합니다. [실기 보고서](live-verification-2026-09-25.md)를 보세요.

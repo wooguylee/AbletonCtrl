@@ -22,6 +22,7 @@ class TimelineEditor:
         self.committing = False
         self.backup = None
         self.requested_end = 0
+        self.deferred = False
 
     def clips(self):
         return self.api._clips(self.track)
@@ -162,11 +163,39 @@ class TimelineEditor:
         working.loop_start = float(content_start)
         working.start_marker = float(content_start)
         working.loop_end = float(content_end)
+        # Live 12.4.6 updates unwarped Arrangement bounds on a later Live tick.
+        # Markers alone are already readable; never replace the original yet.
+        if source.is_audio_clip and not source.warping:
+            for _ in range(3):
+                if near(working.end_time - working.start_time, end - start):
+                    break
+                if getattr(source, "has_envelopes", False):
+                    raise BridgeError("NOT_EDITABLE", "Deferred unwarped resize with clip envelopes is not supported; original preserved")
+                self.deferred = True
+                yield
         if not near(working.end_time - working.start_time, end - start):
             raise BridgeError("UNSUPPORTED", "Live did not apply requested unlooped length; original preserved")
         if not near(working.loop_start, content_start) or not near(working.loop_end, content_end):
             raise BridgeError("RESULT_UNCERTAIN", "Native content markers differ from requested resize")
         return [(working, start)]
+
+    def _discard_owned(self):
+        for owned in list(reversed(self.owned)):
+            try:
+                self.remove(owned)
+            except Exception:
+                pass
+
+    def _source_state(self, source):
+        state = self.api._snapshot(self.track, source)
+        names = ('start_marker', 'end_marker', 'has_envelopes')
+        if source.is_audio_clip:
+            names += ('gain', 'pitch_coarse', 'pitch_fine', 'warping', 'warp_mode', 'file_path', 'ram_mode')
+        for name in names:
+            if hasattr(source, name):
+                state[name] = getattr(source, name)
+        state['tempo'] = self.api.song.tempo
+        return state
 
     def _looped(self, source, start, end):
         period = source.loop_end - source.loop_start
@@ -221,6 +250,7 @@ class TimelineEditor:
         if near(start, source.start_time) and near(end, source.end_time):
             return {"clips": [self.api._snapshot(self.track, source)], "changed": False, "warnings": []}
         original_muted = source.muted
+        original_state = self._source_state(source)
         shrinking = start >= source.start_time and end <= source.end_time
 
         def apply():
@@ -233,9 +263,15 @@ class TimelineEditor:
                 elif source.looping:
                     prepared = self._looped(source, start, end)
                 else:
-                    prepared = self._unlooped(source, start, end)
+                    prepared = yield from self._unlooped(source, start, end)
                 if not prepared:
                     raise BridgeError("RESULT_UNCERTAIN", "No prepared clips; original preserved")
+                # Recheck after any yielded Live tick: UI edits may have happened.
+                self.api._resolve(clip_id, "clip")
+                self.api._editable(self.track, source)
+                if self._source_state(source) != original_state:
+                    raise BridgeError("STATE_CHANGED", "Source changed while preparing resize; original preserved")
+                self.api._space(self.track, start, end-start, exclude=source)
                 self.backup = self.stage(source)
                 self.committing = True
                 self.track.delete_clip(source)
@@ -247,15 +283,17 @@ class TimelineEditor:
                     output.append(self.api._snapshot(self.track, clip))
                 for owned in [c for c in reversed(self.owned) if c != self.backup] + [self.backup]:
                     self.remove(owned)
-                return {"clips": output, "changed": True,
-                        "warnings": ["Looped extension is represented by contiguous native clip segments"] if len(output) > 1 else []}
+                warnings = ["Looped extension is represented by contiguous native clip segments"] if len(output) > 1 else []
+                if self.deferred:
+                    warnings.append("Live deferred this resize: Undo/Redo may span multiple steps; the first Undo can leave muted staging material")
+                return {"clips": output, "changed": True, "warnings": warnings}
+            except GeneratorExit:
+                if not self.committing:
+                    self._discard_owned()
+                raise
             except Exception as exc:
                 if not self.committing:
-                    for owned in list(reversed(self.owned)):
-                        try:
-                            self.remove(owned)
-                        except Exception:
-                            pass
+                    self._discard_owned()
                 recovery = []
                 for clip in self.owned:
                     try:
@@ -263,7 +301,7 @@ class TimelineEditor:
                     except Exception:
                         pass
                 code = "PARTIAL_EDIT" if self.committing else getattr(exc, "code", "LIVE_ERROR")
-                raise BridgeError(code, "%s; %s. Recovery copies (muted): %s. Inspect the Set before retrying; Live Undo can revert the edit." %
+                raise BridgeError(code, "%s; %s. Recovery copies (muted): %s. Inspect the Set before retrying; Live Undo may span multiple steps and can temporarily restore muted staging material." %
                                   (exc, "original backup retained where available" if self.committing else "original preserved",
                                    ", ".join(recovery) or "none"))
         return self.api._mutate(apply)

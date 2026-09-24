@@ -213,6 +213,75 @@ class TimelineTests(unittest.TestCase):
             self.api.call('trim_clip', {'clip_id': handle, 'start_beats': 1, 'end_beats': 3})
         self.assertEqual(track.arrangement_clips, [clip])
 
+    def test_unwarped_resize_waits_for_live_tick_before_replacing_original(self):
+        from remote_script.AbletonArrangementMCP.deferred import Deferred
+        track = self.song.tracks[1]
+        source = track.arrangement_clips[0]
+        source.loop_start, source.loop_end = 1, 3
+        source.sample_length, source.sample_rate = 100, 10
+        source.ignore_resize = True  # Live 12.4.6 applies unwarped length next tick.
+        handle = self.api._handle('clip', source, track)
+        pending = self.api.call('resize_clip', {'clip_id': handle, 'end_beats': 6})
+        self.assertIsInstance(pending, Deferred)
+        self.assertIn(source, track.arrangement_clips)
+        self.assertEqual(self.song.undo_depth, 1)
+        for clip in track.arrangement_clips:
+            if clip is not source:
+                clip.end_time = clip.start_time + (clip.loop_end-clip.loop_start)/0.5
+        result = pending.advance()
+        self.assert_range(result, 0, 6)
+        self.assertNotIn(source, track.arrangement_clips)
+        self.assertEqual(len(track.arrangement_clips), 1)
+
+    def test_midi_trim_does_not_read_audio_only_native_properties(self):
+        from unittest.mock import patch
+        def audio_only(clip):
+            raise RuntimeError('Gain is only available for Audio Clips')
+        with patch.object(type(self.source), 'gain', property(audio_only), create=True):
+            result = self.invoke('trim_clip', start_beats=9, end_beats=11)
+        self.assert_range(result, 9, 11)
+
+    def test_deferred_resize_with_envelopes_preserves_source(self):
+        track = self.song.tracks[1]
+        source = track.arrangement_clips[0]
+        source.loop_start, source.loop_end = 1, 3
+        source.sample_length, source.sample_rate = 100, 10
+        source.ignore_resize, source.has_envelopes = True, True
+        with self.assertRaisesRegex(BridgeError, 'with clip envelopes'):
+            self.api.call('resize_clip', {'clip_id': self.api._handle('clip', source, track), 'end_beats': 6})
+        self.assertEqual(track.arrangement_clips, [source])
+        self.assertEqual(self.song.undo_depth, 0)
+
+    def test_cancel_deferred_resize_cleans_staging_and_closes_undo(self):
+        from remote_script.AbletonArrangementMCP.deferred import Deferred
+        track = self.song.tracks[1]
+        source = track.arrangement_clips[0]
+        source.loop_start, source.loop_end = 1, 3
+        source.sample_length, source.sample_rate = 100, 10
+        source.ignore_resize = True
+        pending = self.api.call('resize_clip', {'clip_id': self.api._handle('clip', source, track), 'end_beats': 6})
+        self.assertIsInstance(pending, Deferred)
+        pending.close()
+        self.assertEqual(track.arrangement_clips, [source])
+        self.assertEqual(self.song.undo_depth, 0)
+
+    def test_source_gain_change_during_deferred_resize_is_preserved(self):
+        track = self.song.tracks[1]
+        source = track.arrangement_clips[0]
+        source.loop_start, source.loop_end = 1, 3
+        source.sample_length, source.sample_rate = 100, 10
+        source.ignore_resize, source.gain = True, 0.5
+        pending = self.api.call('resize_clip', {'clip_id': self.api._handle('clip', source, track), 'end_beats': 6})
+        source.gain = 0.75
+        for clip in track.arrangement_clips:
+            if clip is not source:
+                clip.end_time = clip.start_time + (clip.loop_end-clip.loop_start)/0.5
+        with self.assertRaisesRegex(BridgeError, 'Source changed'):
+            pending.advance()
+        self.assertEqual(track.arrangement_clips, [source])
+        self.assertEqual(source.gain, 0.75)
+        self.assertEqual(self.song.undo_depth, 0)
+
     def test_wrong_length_audio_cover_is_cleaned_before_failure(self):
         track = self.song.tracks[1]
         source = track.arrangement_clips[0]

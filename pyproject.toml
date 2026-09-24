@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ableton-arrangement-mcp"
-version = "0.3.0"
+version = "0.3.1"
 description = "AbletonCtrl: original ableton-mcp tools plus Arrangement clip control"
 readme = "doc/README.md"
 license = {file = "LICENSE"}

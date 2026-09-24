@@ -6,15 +6,15 @@
   project's `doc/`. No global memory writes. Root README is only a documentation index.
 - Target **Ableton Live 12 Suite**.
 - Control Surface / installed Remote Script name: **AbletonVVoori** (user requested).
-- User currently handles Live launch/settings. Do not operate Live UI or resume
-  native write tests until the user asks to continue after setup.
+- 2026-09-25: user completed setup and explicitly authorized full native testing,
+  especially Arrangement. Tests use dedicated local Sets under doc/local/.
 - Preserve **all tools of ahujasid/ableton-mcp** and add Arrangement control in one
   reusable server/script distribution. The initial Arrangement-only design is historical.
 - Remote `origin`: `https://github.com/wooguylee/AbletonCtrl.git`, branch `main`.
 - Finish authorized work with checks, record updates, commit and push. Do not re-ask.
   Never force-push or discard remote history.
 
-## Current implementation (0.3.0)
+## Current implementation (0.3.1)
 
 - 54 tools: 37 upstream tools with unchanged input schemas + 17 extended Arrangement tools.
 - Upstream pinned to `9dddc7bd5b95412510fdeb745949e3bf23f3fd8a`; MCP 1.4.5,
@@ -49,20 +49,21 @@
 ## Distribution / environment
 
 - Windows Python 3.12.10, MCP SDK 1.30.0. Live 12.4.6 Suite installation confirmed.
-- Package `ableton-arrangement-mcp` 0.3.0; `abletonctrl` and old executable alias.
+- Package `ableton-arrangement-mcp` 0.3.1; `abletonctrl` and old executable alias.
 - Wheel bundles complete Live script; `abletonctrl-install` or `scripts/configure.py`
   configures explicit User Library. Installed folder is `AbletonVVoori`; source folder
   remains `remote_script/AbletonArrangementMCP` to preserve imports/vendor provenance.
 - Installer uses its executing Python, never an unrelated target project's .venv.
 - Config examples/token in `doc/local`; generated Codex timeout 180 seconds.
 - Switch both the old MCP client entry and old Live control surface together.
-- 48 unittest tests pass, including 19 timeline regressions and actual stdio/TCP with
+- 61 unittest tests pass, including 24 timeline regressions and actual stdio/TCP with
   fake Live native objects. Separate venv wheel installation, native file hash parity,
   generated silence WAV and 54-tool discovery are recorded in verification.md.
 - Installed into confirmed `C:/Users/Administrator/Documents/Ableton/User Library`.
-  Previous UI setup was stopped by the user before activation. User will select the
-  renamed surface after restarting Live. No native clip acceptance, macOS acceptance
-  or optional backend upload test yet. Do not claim those were verified.
+  Live 12.4.6 Suite activated AbletonVVoori. All 54 tools exercised through real MCP;
+  optional dataset tools checked off, no hosted upload. See live-verification-2026-09-25.md.
+  Dedicated Arrangement MIDI/warped/unwarped tests, cross-track copy/move, full Session
+  slots and Undo/Redo verified. No macOS/tempo automation/clip envelope acceptance.
 - Read `verification.md`, `setup.md`, `compatibility.md` for current instructions.
 
 ## Records
@@ -73,7 +74,24 @@
 - Independent review findings (passive capability and interpreter selection) fixed
   and verified. Future changes must keep those regressions covered.
 - Timeline review fixed holding/final-range collision, lost loop intro, and untracked
-  wrong-length temporary cover. Preserve these regression tests. Actual native edge
-  object identity, audio warp timing, automation preservation and Undo need Live tests.
+  wrong-length temporary cover. Preserve these regression tests. Native timing and
+  Undo now have evidence in live-verification-2026-09-25.md; automation remains unverified.
 - Producer Pal behavior research is GPL-source-free independent implementation;
   pinned research provenance is recorded in research.md, no vendor code was added.
+
+## Native findings in 0.3.1
+
+- Unwarped marker length updates next Live tick. Deferred generator runs only on the
+  Live main thread; source retained/rechecked before commit. Other MCP calls serialized.
+- Keep Live UI idle during edits. Scalar source fingerprint is not a full transaction.
+  Existing clip envelopes on a deferred unwarped resize are rejected before yielding.
+- Deferred resize Undo/Redo may span multiple steps (two native steps observed).
+  First Undo can leave muted staging clips; inspect after success/failure, never auto-Undo.
+  Normal MIDI move was verified as one-step Undo/Redo.
+- Locator API snaps to editing grid and can DELETE an existing cue even when selected
+  predicate is false. Adapter permits near-existing rename or first cue only; any other
+  creation returns UNSUPPORTED before mutations, with recheck after deferred tick.
+  Actual first-cue time may be quantized. Do not remove this guard based on fake tests.
+- 37 upstream tool schemas and vendored original bytes remain unchanged.
+- Reusable native runner: scripts/live_acceptance.py (read-only default; --run-writes
+  adds 5 test tracks, Drift and Core Library 505 Core Kit). Raw reports/media are local.

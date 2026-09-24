@@ -6,6 +6,7 @@ import socket
 import time
 from collections import OrderedDict
 from .api import BridgeError
+from .deferred import Deferred
 
 MAX_FRAME = 16 * 1024 * 1024
 MAX_CLIENTS = 8
@@ -25,6 +26,7 @@ class JSONTCPBridge:
         self.token = token
         self.clients = {}
         self.seen = OrderedDict()
+        self.pending = None
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             # Intentionally no SO_REUSEADDR on Windows: another process must not hijack the port.
@@ -69,6 +71,8 @@ class JSONTCPBridge:
             if len(self.seen) > 2048:
                 self.seen.popitem(last=False)
             result = self.handler(req["method"], req.get("params", {}))
+            if isinstance(result, Deferred):
+                return (request_id, result)
             response = {"id": request_id, "result": result}
         except BridgeError as exc:
             response = {"id": request_id, "error": {"code": exc.code, "message": str(exc)}}
@@ -76,16 +80,39 @@ class JSONTCPBridge:
             response = {"id": request_id, "error": {"code": "INVALID_REQUEST", "message": str(exc)}}
         except Exception:
             response = {"id": request_id, "error": {"code": "INTERNAL_ERROR", "message": "Bridge failed; a write outcome may be unknown"}}
+        return self._encode(response)
+
+    @staticmethod
+    def _encode(response):
         try:
             encoded = json.dumps(response, ensure_ascii=True, allow_nan=False).encode("utf-8") + b"\n"
             if len(encoded) <= MAX_FRAME:
                 return encoded
         except (ValueError, TypeError):
             pass
-        return (json.dumps({"id": request_id, "error": {"code": "RESPONSE_TOO_LARGE",
+        return (json.dumps({"id": response.get("id"), "error": {"code": "RESPONSE_TOO_LARGE",
                            "message": "Response unavailable; inspect state before retrying any write"}}) + "\n").encode()
 
     def poll(self):
+        # A continuation runs once per update, on this same Live thread. Do not
+        # interleave other MCP commands with a staged edit or an open Undo step.
+        if self.pending is not None:
+            sock, state, request_id, action, started = self.pending
+            try:
+                if time.monotonic() - started > IDLE_SECONDS:
+                    action.close()
+                    raise BridgeError("TIMEOUT", "Live update did not finish in time; inspect the Set before retrying")
+                result = action.advance()
+                if isinstance(result, Deferred):
+                    return
+                response = {"id": request_id, "result": result}
+            except BridgeError as exc:
+                response = {"id": request_id, "error": {"code": exc.code, "message": str(exc)}}
+            except Exception as exc:
+                response = {"id": request_id, "error": {"code": "LIVE_ERROR", "message": "%s; inspect the Set before retrying" % exc}}
+            state["output"] = self._encode(response)
+            state["since"] = time.monotonic()
+            self.pending = None
         for _ in range(MAX_CLIENTS):
             try:
                 sock, _ = self.listener.accept()
@@ -120,6 +147,11 @@ class JSONTCPBridge:
                         state["output"] = b'{"id":null,"error":{"code":"INVALID_REQUEST","message":"One request per connection"}}\n'
                     else:
                         state["output"] = self._dispatch(frame)
+                        if isinstance(state["output"], tuple):
+                            request_id, action = state["output"]
+                            state["output"] = None
+                            self.pending = (sock, state, request_id, action, time.monotonic())
+                            return
                     state["since"] = time.monotonic()  # Long native calls get a fresh response-send window.
                 try:
                     sent = sock.send(state["output"][:CHUNK_SIZE])
@@ -132,6 +164,13 @@ class JSONTCPBridge:
                 self._drop(sock)
 
     def close(self):
+        if self.pending is not None:
+            action = self.pending[3]
+            self.pending = None
+            try:
+                action.close()
+            except Exception:
+                pass  # Still close sockets if Live is already tearing down a Set.
         for sock in list(self.clients):
             self._drop(sock)
         self.listener.close()

@@ -4,6 +4,7 @@ import math
 import os
 import uuid
 from collections import OrderedDict
+from .deferred import Deferred
 
 MAX_BEATS = 1576800.0
 
@@ -104,13 +105,18 @@ class ArrangementAPI:
             raise BridgeError("NOT_EDITABLE", "Stop recording and unfreeze the target track before editing")
 
     def _mutate(self, action):
-        begin = require_method(self.song, "begin_undo_step")
-        end = require_method(self.song, "end_undo_step")
-        begin()
-        try:
-            return action()
-        finally:
-            end()
+        def run():
+            begin = require_method(self.song, "begin_undo_step")
+            end = require_method(self.song, "end_undo_step")
+            begin()
+            try:
+                result = action()
+                if inspect.isgenerator(result):
+                    return (yield from result)
+                return result
+            finally:
+                end()
+        return Deferred(run()).advance()
 
     def _snapshot(self, track, clip):
         return {"clip_id": self._handle("clip", clip, track),
@@ -130,7 +136,7 @@ class ArrangementAPI:
         return items[offset:offset + limit]
 
     def status(self):
-        return {"bridge_version": "0.3.0", "live_version": self.version,
+        return {"bridge_version": "0.3.1", "live_version": self.version,
                 "time_unit": "beats", "tempo": self.song.tempo,
                 "time_signature": [self.song.signature_numerator, self.song.signature_denominator],
                 "is_playing": bool(self.song.is_playing), "track_count": len(self.song.tracks),

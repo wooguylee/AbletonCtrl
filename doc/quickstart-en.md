@@ -98,8 +98,17 @@ Timeline edits prepare muted copies beyond the requested range, then keep a full
 backup until replacement succeeds. Other clips cannot overlap the requested range.
 Unwarped audio cannot extend beyond its file; native length/marker readback is
 checked. `PARTIAL_EDIT` or a timeout requires inspection of the clip list/recovery
-copies, or manual Live Undo; never blindly retry. Real Live acceptance remains
-pending, including native automation preservation and synchronous audio warping.
+copies, or manual Live Undo; never blindly retry. Windows Live 12.4.6 Suite was
+verified with all 54 tools and MIDI/warped/unwarped Arrangement scenarios. See the
+[live report](live-verification-2026-09-25.md). Native automation preservation,
+tempo automation, macOS and hosted dataset upload remain unverified.
+
+Unwarped resizing can wait for a later Live tick and span multiple Undo steps
+(two observed; the first Undo can restore muted staging clips). Keep Live UI idle
+during edits. Deferred resizing of clips with envelopes is rejected.
+`create_locator` renames an existing locator or creates the first one only; create
+additional locators in Live. This prevents Live's grid-snapped toggle from deleting
+an existing locator. The first locator's actual position may be quantized.
 
 Dataset/telemetry tools are optional and off by default. Music control requires
 no hosted backend or OpenAI API key. See [compatibility](compatibility.md) for the

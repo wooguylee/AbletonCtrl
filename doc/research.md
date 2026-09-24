@@ -83,3 +83,14 @@ clip/time 인수를 설명하며 같은 트랙에만 복제한다는 조건을 �
 임시 무음 Session 클립을 사용하며 warp/loop readback이 다르면 중단합니다.
 자세한 알고리즘과 사용 계약은 [타임라인 편집 문서](timeline-editing.md), 실제
 Live에서 더 확인할 항목은 [검증 기록](verification.md)에 정리했습니다.
+
+## Live 12.4.6 실기 보완 — 2026-09-25
+
+- [공식 Song LOM](https://docs.cycling74.com/apiref/lom/song/)의 cue 명령은
+  set/delete toggle이며, current_song_time과 start_time은 별도 속성입니다.
+- [공식 Arrangement 그리드 설명](https://www.ableton.com/en/manual/arrangement-view/#using-the-editing-grid).
+  Native 테스트에서 정지 중 cue 명령이 editing grid에 스냅되는 것을 재현했습니다.
+  current_song_time setter 뒤 Live tick을 기다려야 하며, global quantization 해제만으로
+  정확한 cue 위치를 보장하지 못했습니다. 인접 cue 삭제 방지는 first-only guard로 구현합니다.
+- Warp Off 오디오의 marker 변경 직후 length가 이전 값이고 다음 Live tick에 갱신되는
+  것을 직접 확인했습니다. worker sleep 대신 main-thread continuation으로 수정했습니다.

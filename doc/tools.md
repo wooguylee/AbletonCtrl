@@ -45,6 +45,13 @@
 | `reject_last_action` | `ctx: Context, reason: str='', user_prompt: str=''` |
 | `record_audition` | `ctx: Context, uri: str, kept: bool=False, search_query: str='', dwell_ms: float=0.0, user_prompt: str=''` |
 
+`create_locator`의 입력 schema는 동일하지만 0.3.1에서 보호 조건이 추가됐습니다.
+요청 시간(허용 오차 0.001 beat)에 기존 Locator가 있으면 이름을 바꿉니다. 아무 Locator도
+없을 때만 첫 항목을 생성하며, 실제 위치는 Arrangement 그리드에 스냅될 수 있습니다.
+이미 다른 Locator가 있으면 추가 생성을 `UNSUPPORTED`로 거부합니다. Live의 toggle
+명령이 기존 항목을 삭제하는 문제 때문입니다. 재생/녹음 중 첫 생성도 거부합니다.
+추가 Locator는 Live에서 직접 생성하세요.
+
 ## 추가 Arrangement 도구 17개
 
 | 도구 | 설명 |
