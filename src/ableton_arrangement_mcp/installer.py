@@ -9,7 +9,9 @@ import wave
 from pathlib import Path
 from importlib.resources import files
 
-SCRIPT_NAME = "AbletonArrangementMCP"
+SCRIPT_NAME = "AbletonVVoori"
+# Keep the source package stable; Live displays the installed folder's name.
+SOURCE_NAME = "AbletonArrangementMCP"
 
 
 def write_silence(path):
@@ -56,7 +58,7 @@ def configure(root=None, user_library=None, port=None, replace=False):
             stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
             backup = local / "backups" / (SCRIPT_NAME + "-" + stamp)
             shutil.copytree(target, backup)
-        source = root / "remote_script" / SCRIPT_NAME
+        source = root / "remote_script" / SOURCE_NAME
         if not source.is_dir():
             source = Path(str(files("ableton_arrangement_mcp.live_script")))
         shutil.copytree(source, target, dirs_exist_ok=replace,

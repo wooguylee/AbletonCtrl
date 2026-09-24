@@ -58,7 +58,7 @@ class BridgeClient:
                     if len(response) > MAX_FRAME:
                         raise BridgeClientError("Bridge response exceeds 16 MiB; inspect state before retrying")
         except ConnectionRefusedError as exc:
-            raise BridgeClientError("BRIDGE_UNAVAILABLE: Start Live and select AbletonArrangementMCP as a Control Surface") from exc
+            raise BridgeClientError("BRIDGE_UNAVAILABLE: Start Live and select AbletonVVoori as a Control Surface") from exc
         except (OSError, TimeoutError) as exc:
             raise BridgeClientError("Bridge timeout/connection failure; write outcome is unknown. Do not retry automatically; inspect the Set.") from exc
         try:

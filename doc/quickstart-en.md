@@ -29,7 +29,7 @@ python3 -m venv .venv
 Use your actual User Library location from Live Settings > Library. Do not pip
 install a `Live` package: the native API is supplied by Live itself.
 
-1. Restart Live. Select **AbletonArrangementMCP** in Settings > Link, Tempo & MIDI >
+1. Restart Live. Select **AbletonVVoori** in Settings > Link, Tempo & MIDI >
    Control Surface. MIDI Input/Output may be None.
 2. When migrating, deselect the old **AbletonMCP** control surface and remove its
    old MCP client entry. The new authenticated protocol does not connect to the
@@ -71,6 +71,10 @@ installed folder to `doc/local/backups`, preserves the token, and refreshes both
 connection files. Version 0.3 also generates `silence.wav` in the installed script
 folder for audio edge trimming; updating only the MCP package is insufficient.
 Restart Live and your MCP client. Do not mix script/server versions.
+
+The Control Surface is now named **AbletonVVoori**. For installations using the old
+`AbletonArrangementMCP` folder, close Live, rename that folder to `AbletonVVoori`,
+then update with `--replace`. Select only the new surface to avoid a port conflict.
 
 ## Scope
 

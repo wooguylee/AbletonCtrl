@@ -66,3 +66,17 @@
   Python 3.7 syntax parsing and documentation relative links passed.
 - Visible conversation export refreshed; no global memory write. origin/main was
   fetched before delivery and matched the starting commit; no remote history replaced.
+
+## Live setup and surface rename — 2026-09-24
+
+- Confirmed Live 12.4.6 Suite and the User Library from installed Library.cfg. Installed
+  the Remote Script; bridge was not active. UI setup was stopped by the user, who will
+  handle launch/settings. No native test clips or Set modifications were made.
+- User requested Control Surface name AbletonVVoori. Updated installer destination,
+  connection error help, Korean/English setup and reuse documentation. Kept internal
+  source/package paths and tool contracts stable.
+- With Live closed, backed up the installed AbletonArrangementMCP folder under
+  doc/local/backups, renamed it to AbletonVVoori, verified source/config byte parity
+  and silence asset. Did not operate or launch Live during the rename task.
+- 10 targeted tests passed; rebuilt and installed wheel in separate venv, verified
+  new folder name and 54-tool discovery. Raw visible transcript export refreshed.

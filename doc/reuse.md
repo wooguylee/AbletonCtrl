@@ -26,6 +26,10 @@ flowchart LR
 포함됩니다. `pip install .` 또는 Git URL 설치 후 `abletonctrl-install`로
 User Library에 배치합니다. 소스를 재사용할 때에는 MIT LICENSE와 원본 출처를 보존하세요.
 
+Control Surface 표시 이름과 설치 폴더는 `AbletonVVoori`입니다. 소스 폴더
+`remote_script/AbletonArrangementMCP`와 Python 패키지 경로는 유지하며 설치 도우미의
+`SCRIPT_NAME`/`SOURCE_NAME`으로 설치 이름과 소스 위치를 구분합니다.
+
 `compatibility.py`는 원본 도구의 입력·반환 형식을 보존하고 `upstream.` 명령으로
 인증 bridge에 연결합니다. `upstream/`의 원본 서버 코드는 별도 MCP나 소켓을 실행하지
 않습니다. `surface.py`는 원본 Live handler를 상속하되 원본 네트워크 생성자를 호출하지

@@ -43,7 +43,7 @@ py -3.12 -m venv .venv
 ```
 
 마지막 경로는 Live 설정에서 확인한 실제 User Library로 바꿉니다. Live를 재시작하고
-Control Surface에 `AbletonArrangementMCP`를 선택합니다. 기존 `AbletonMCP` 선택과
+Control Surface에 `AbletonVVoori`를 선택합니다. 기존 `AbletonMCP` 선택과
 이전 MCP 클라이언트 등록은 해제하고, 생성된 `doc/local/codex-config.toml` 또는
 `doc/local/mcp-client.json`을 클라이언트 설정에 병합합니다.
 

@@ -35,7 +35,7 @@ User Library 경로를 확인합니다. 다음 경로는 예시이며 자신의 
 .venv\Scripts\python scripts\configure.py --user-library 'D:\Ableton\User Library'
 ```
 
-도우미가 `User Library/Remote Scripts/AbletonArrangementMCP/`에 Python 파일과
+도우미가 `User Library/Remote Scripts/AbletonVVoori/`에 Python 파일과
 `config.json`을 복사합니다. 사용자 라이브러리 경로를 추측해 자동 설치하지 않습니다.
 이미 설치된 것을 업데이트하려면 Live를 닫고 다음처럼 실행합니다.
 
@@ -47,9 +47,13 @@ User Library 경로를 확인합니다. 다음 경로는 예시이며 자신의 
 덮어쓰며, 설치 폴더의 별도 사용자 파일은 삭제하지 않습니다.
 
 Live를 재시작하고 **Settings/Preferences → Link, Tempo & MIDI → Control Surface**에서
-`AbletonArrangementMCP`를 한 슬롯에 선택합니다. 하드웨어 MIDI Input/Output은 `None`으로
+`AbletonVVoori`를 한 슬롯에 선택합니다. 하드웨어 MIDI Input/Output은 `None`으로
 둘 수 있습니다. 정상 시작하면 상태 표시줄에 `Arrangement MCP ready`가 나타납니다.
 포트를 바꾸려면 `--port 8766`처럼 지정하고 양쪽 설정을 갱신한 뒤 Live를 재시작합니다.
+
+예전 `AbletonArrangementMCP` 폴더가 있는 설치는 Live를 종료한 상태에서 해당 폴더를
+`AbletonVVoori`로 이름 변경한 뒤 `--replace`로 업데이트할 수 있습니다. 두 이름을
+동시에 활성화하면 같은 포트가 충돌하므로 새 이름만 선택합니다.
 
 공식 설치 위치와 선택 절차: [Ableton Remote Script 설치 안내](https://help.ableton.com/hc/en-us/articles/209072009-Installing-third-party-remote-scripts).
 
@@ -88,7 +92,7 @@ Copy-Item -LiteralPath 'doc\local\codex-config.toml' -Destination '.codex\config
 
 | 증상 | 확인할 것 |
 | --- | --- |
-| Control Surface 목록에 없음 | 폴더가 정확히 `Remote Scripts/AbletonArrangementMCP`인지, Live를 재시작했는지 |
+| Control Surface 목록에 없음 | 폴더가 정확히 `Remote Scripts/AbletonVVoori`인지, Live를 재시작했는지 |
 | startup failed | Live의 `%APPDATA%/Ableton/Live <version>/Preferences/Log.txt`에서 `Arrangement MCP` 검색 |
 | UNAUTHORIZED | 프로젝트 `bridge.json`과 설치 폴더 `config.json`의 토큰을 설치 도우미로 동기화 |
 | 포트 사용 중 | 중복 Control Surface 선택을 해제하거나 양쪽 포트 변경 |
@@ -120,7 +124,7 @@ Arrangement 제어가 보장되지는 않으며, 선택한 서버가 필요한 �
 ## 기존 ahujasid/ableton-mcp에서 전환
 
 1. 기존 Live `AbletonMCP` Control Surface를 `None`으로 바꿉니다.
-2. 이 저장소를 설치하고 함께 제공하는 `AbletonArrangementMCP`를 활성화합니다.
+2. 이 저장소를 설치하고 함께 제공하는 `AbletonVVoori`를 활성화합니다.
 3. 클라이언트의 기존 `ableton-mcp`/`uvx ableton-mcp` 서버 등록을 해제합니다.
 4. 생성된 `abletonctrl` MCP 항목을 등록합니다. 기존 0.1 버전의
    `ableton_arrangement` 항목이 있으면 이 항목으로 교체합니다.

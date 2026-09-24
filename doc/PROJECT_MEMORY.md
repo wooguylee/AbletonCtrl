@@ -5,6 +5,9 @@
 - All project conversations, research, plans, results, and knowledge stay under this
   project's `doc/`. No global memory writes. Root README is only a documentation index.
 - Target **Ableton Live 12 Suite**.
+- Control Surface / installed Remote Script name: **AbletonVVoori** (user requested).
+- User currently handles Live launch/settings. Do not operate Live UI or resume
+  native write tests until the user asks to continue after setup.
 - Preserve **all tools of ahujasid/ableton-mcp** and add Arrangement control in one
   reusable server/script distribution. The initial Arrangement-only design is historical.
 - Remote `origin`: `https://github.com/wooguylee/AbletonCtrl.git`, branch `main`.
@@ -45,18 +48,21 @@
 
 ## Distribution / environment
 
-- Windows Python 3.12.10, MCP SDK 1.30.0. No running/controlled Live here.
+- Windows Python 3.12.10, MCP SDK 1.30.0. Live 12.4.6 Suite installation confirmed.
 - Package `ableton-arrangement-mcp` 0.3.0; `abletonctrl` and old executable alias.
 - Wheel bundles complete Live script; `abletonctrl-install` or `scripts/configure.py`
-  configures explicit User Library. Script folder stays `AbletonArrangementMCP`.
+  configures explicit User Library. Installed folder is `AbletonVVoori`; source folder
+  remains `remote_script/AbletonArrangementMCP` to preserve imports/vendor provenance.
 - Installer uses its executing Python, never an unrelated target project's .venv.
 - Config examples/token in `doc/local`; generated Codex timeout 180 seconds.
 - Switch both the old MCP client entry and old Live control surface together.
 - 48 unittest tests pass, including 19 timeline regressions and actual stdio/TCP with
   fake Live native objects. Separate venv wheel installation, native file hash parity,
   generated silence WAV and 54-tool discovery are recorded in verification.md.
-- No real User Library installation/native Live acceptance, macOS acceptance or
-  optional backend upload test yet. Do not claim those were verified.
+- Installed into confirmed `C:/Users/Administrator/Documents/Ableton/User Library`.
+  Previous UI setup was stopped by the user before activation. User will select the
+  renamed surface after restarting Live. No native clip acceptance, macOS acceptance
+  or optional backend upload test yet. Do not claim those were verified.
 - Read `verification.md`, `setup.md`, `compatibility.md` for current instructions.
 
 ## Records

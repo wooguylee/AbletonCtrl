@@ -21,6 +21,7 @@ async def check():
         project, library = Path(directory) / "Project", Path(directory) / "User Library"
         library.mkdir()
         config, target = configure(project, library)
+        assert target.name == "AbletonVVoori"
         for source in (ROOT / "remote_script/AbletonArrangementMCP").glob("*.py"):
             assert hashlib.sha256(source.read_bytes()).digest() == hashlib.sha256((target/source.name).read_bytes()).digest(), source.name
         assert (target / "LICENSE").is_file()

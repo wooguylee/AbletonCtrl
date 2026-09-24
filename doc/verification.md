@@ -2,7 +2,8 @@
 
 **자동 테스트 48개 통과, 독립 Python 환경의 wheel 설치 및 54개 MCP 도구 검색 통과.**
 실제 Ableton Live 프로세스 안에서의 실행, macOS, 선택적 Supabase 업로드는 검증하지 않았습니다.
-현재 PC의 실제 User Library에 설치하거나 사용자의 Set을 편집하지 않았습니다.
+현재 PC의 실제 User Library에 설치까지 완료했으며 Control Surface 활성화는 사용자가
+진행합니다. 사용자의 Set은 편집하지 않았습니다.
 
 ## 실행한 검사
 
@@ -99,3 +100,17 @@ Native MidiNoteSpecification/NoteVector 호출, 객체 동등성/무효화, Live
 오디오 가져오기와 clip automation 보존은 이 단계에서 최종 확인해야 합니다.
 가장자리 trim 뒤 native 객체 identity, loop/marker setter의 실제 동작과 오디오 warp
 변경 시점도 미확인입니다. 구현 완료와 native 실기 검증 완료를 구분합니다.
+
+## 설치 및 Control Surface 이름 변경 — 2026-09-24
+
+- 설치된 Live 12.4.6 Suite와 실제 User Library 경로를 확인했습니다. UI 설정 도중
+  사용자가 직접 설정하기로 변경했으므로 자동 제어와 native 편집 테스트를 중단했습니다.
+- 요청한 표시/설치 이름 `AbletonVVoori`를 installer와 연결 실패 안내에 적용했습니다.
+  source package 이름은 유지하여 import와 upstream 원본 기록을 보존합니다.
+- Live가 종료된 상태에서 설치 폴더를 `doc/local/backups/`에 백업한 뒤 새 이름으로
+  변경했습니다. native 파일과 설정의 byte 일치, 무음 WAV 존재, 옛 폴더 부재를 확인했습니다.
+- 이름 변경 검증: 기존 installer/helper 3개와 transport/client 7개 테스트 통과.
+  wheel을 다시 제작하여 별도 venv에 설치, `AbletonVVoori` 대상 폴더와 native hash,
+  설정, 무음 파일 및 실제 stdio 54개 도구 검색 통과. 전체 48개는 앞선 타임라인 검증 결과입니다.
+- 이후 Live 실행/Control Surface 선택은 사용자가 수행합니다. native 동작 성공으로
+  보고하지 않으며, 사용자 재개 요청 전까지 Live 화면을 조작하지 않습니다.
