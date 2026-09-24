@@ -7,8 +7,9 @@ import time
 from collections import OrderedDict
 from .api import BridgeError
 
-MAX_FRAME = 1024 * 1024
+MAX_FRAME = 16 * 1024 * 1024
 MAX_CLIENTS = 8
+CHUNK_SIZE = 256 * 1024
 IDLE_SECONDS = 15
 
 
@@ -102,7 +103,7 @@ class JSONTCPBridge:
             try:
                 if state["output"] is None:
                     try:
-                        data = sock.recv(65536)
+                        data = sock.recv(CHUNK_SIZE)
                     except BlockingIOError:
                         continue
                     if not data:
@@ -119,8 +120,9 @@ class JSONTCPBridge:
                         state["output"] = b'{"id":null,"error":{"code":"INVALID_REQUEST","message":"One request per connection"}}\n'
                     else:
                         state["output"] = self._dispatch(frame)
+                    state["since"] = time.monotonic()  # Long native calls get a fresh response-send window.
                 try:
-                    sent = sock.send(state["output"][:65536])
+                    sent = sock.send(state["output"][:CHUNK_SIZE])
                 except BlockingIOError:
                     continue
                 state["output"] = state["output"][sent:]

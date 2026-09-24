@@ -1,4 +1,5 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -7,6 +8,16 @@ from scripts.export_conversation import export_session
 
 
 class HelperTests(unittest.TestCase):
+    def test_installer_uses_its_own_python_not_an_unrelated_project_venv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            other = root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+            other.parent.mkdir(parents=True)
+            other.write_bytes(b"unrelated interpreter")
+            configure(root)
+            client = json.loads((root / "doc/local/mcp-client.json").read_text())
+            self.assertEqual(client["mcpServers"]["abletonctrl"]["command"], sys.executable)
+
     def test_failed_update_preserves_working_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "Project"

@@ -1,44 +1,58 @@
 # Project memory
 
-## User decisions (2026-09-24)
-- All project discussions, related information, and project memory go under `doc/`.
-- Research and implement a reusable basic MCP for Arrangement clips.
-- The user confirmed **Ableton Live 12 Suite**.
-- User requested implementation, so proceed through ordinary reversible coding and testing.
+## User decisions
 
-## Design
-- Python MCP over stdio -> authenticated loopback JSON/TCP -> Live Remote Script.
-- Remote Script uses Python standard library only and polls nonblocking sockets in `update_display`.
-- All Live reads/writes execute on that callback's main thread.
-- Read/list, create MIDI Arrangement clips, duplicate, delete, edit metadata, read/add MIDI notes.
-- Arrangement timing is beats, zero at 1.1.1. Clip-local note time is a separate coordinate system.
-- No direct start/end assignment, UI automation, `.als` rewriting, automatic retries, or implicit save.
-- Public LOM documentation describes Max for Live; Python signatures need runtime validation.
+- All project conversations, research, plans, results, and knowledge stay under this
+  project's `doc/`. No global memory writes. Root README is only a documentation index.
+- Target **Ableton Live 12 Suite**.
+- Preserve **all tools of ahujasid/ableton-mcp** and add Arrangement control in one
+  reusable server/script distribution. The initial Arrangement-only design is historical.
+- Remote `origin`: `https://github.com/wooguylee/AbletonCtrl.git`, branch `main`.
+- Finish authorized work with checks, record updates, commit and push. Do not re-ask.
+  Never force-push or discard remote history.
 
-## Environment
-- Workspace started empty, with no Git repository or applicable ancestor AGENTS.md.
-- Python 3.12.10 is available via `py -3.12`.
-- No running Ableton process was detected during initial inspection.
-- See `verification.md` for final checks and the remaining Live acceptance steps.
+## Current implementation (0.2.0)
 
-## Delivered state
-- 10 MCP tools implemented; `.venv` contains MCP SDK 1.30.0.
-- 20 automated tests pass, including a real MCP stdio client and real loopback TCP.
-- Config and per-machine client examples generated in `doc/local/`; keep tokens private.
-- Remote Script has NOT been installed into a User Library; Live has NOT been controlled yet.
-- `--check` currently returns BRIDGE_UNAVAILABLE. Next integration step is the actual
-  User Library path, Control Surface activation, and disposable-Set checks in `verification.md`.
-- Exported visible user/assistant messages into `doc/conversations/*-visible.jsonl`.
-  Refresh the export at task end; app-managed session logs stay in the app's own storage.
-- Independent review findings fixed: failed installer updates preserve existing local
-  connection settings; transcript metadata removal preserves following user content.
-- Native version-sensitive APIs remain capability-checked and live acceptance is outstanding.
+- 51 tools: 37 upstream tools with unchanged input schemas + 14 extended Arrangement tools.
+- Upstream pinned to `9dddc7bd5b95412510fdeb745949e3bf23f3fd8a`; MCP 1.4.5,
+  Live script 1.7.1. Current upstream already has some Arrangement operations;
+  the user's installed older version was not inspected directly.
+- Vendor original tool/Live handler code with MIT license. Hash inventory in
+  `upstream-source.json`, tool inventory in `upstream-tools.json`.
+- stdio MCP → authenticated loopback TCP → combined Remote Script main-thread dispatch.
+  No original TCP server; no arbitrary Python. Both reads and writes stay on Live's thread.
+- Legacy tools use indices and original string results/errors. New `ableton_` tools
+  use current-connection handles and structured responses/errors.
+- New Arrangement: list/get, metadata, MIDI create, audio import, duplicate/move/delete,
+  MIDI note read/add/update/delete by ID.
+- Move is verified copy then source deletion in one Undo step, free same-track range
+  only. New ID returned. Partial failures require inspection, no automatic retry/Undo.
+- Audio import allowed only at/after last track clip because length depends on Live.
+- No arbitrary timeline trimming/resizing, cross-track Arrangement copy, comping,
+  automation editing, or automatic Set saving.
+- Upstream optional dataset tools/decorators retained, collection off by default;
+  backend credentials never bundled. Local state belongs in `doc/local/upstream`.
+  Passive capture is opt-in and capability must not be advertised when disabled.
 
-## Git workflow (user instruction, 2026-09-24)
-- Remote: `origin` = `https://github.com/wooguylee/AbletonCtrl.git`.
-- The remote was empty when first checked; initial branch is `main`.
-- Finish each completed task with appropriate checks, project record updates,
-  a Git commit, and a push. This is authorized; do not ask again for routine completion.
-- Never force-push or discard remote history. Verify push and working-tree status.
-- `doc/local/`, raw conversation JSONL, `.venv/`, and machine-local `.codex/`
-  remain excluded; reviewed Markdown records and source are committed.
+## Distribution / environment
+
+- Windows Python 3.12.10, MCP SDK 1.30.0. No running/controlled Live here.
+- Package `ableton-arrangement-mcp` 0.2.0; `abletonctrl` and old executable alias.
+- Wheel bundles complete Live script; `abletonctrl-install` or `scripts/configure.py`
+  configures explicit User Library. Script folder stays `AbletonArrangementMCP`.
+- Installer uses its executing Python, never an unrelated target project's .venv.
+- Config examples/token in `doc/local`; generated Codex timeout 180 seconds.
+- Switch both the old MCP client entry and old Live control surface together.
+- 29 unittest tests pass, including actual stdio/TCP with fake Live native objects.
+  Separate venv wheel installation, native file hash parity and 51-tool discovery pass.
+- No real User Library installation/native Live acceptance, macOS acceptance or
+  optional backend upload test yet. Do not claim those were verified.
+- Read `verification.md`, `setup.md`, `compatibility.md` for current instructions.
+
+## Records
+
+- `doc/local/`, `.venv/`, `.codex/`, raw transcript JSONL and credentials are ignored.
+- Refresh visible conversation export at task end with `scripts/export_conversation.py`.
+  It copies visible user/assistant text; app-managed original session storage is separate.
+- Independent review findings (passive capability and interpreter selection) fixed
+  and verified. Future changes must keep those regressions covered.

@@ -1,3 +1,5 @@
+> Historical 0.1 Arrangement-only plan. Current scope: [upstream integration](upstream-integration-plan.md) and [README](README.md).
+
 # Arrangement MCP implementation plan
 
 **Goal:** reusable basic Arrangement clip MCP for Live 12 Suite.

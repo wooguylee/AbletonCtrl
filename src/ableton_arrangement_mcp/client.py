@@ -6,7 +6,7 @@ import time
 import uuid
 from pathlib import Path
 
-MAX_FRAME = 1024 * 1024
+MAX_FRAME = 16 * 1024 * 1024
 
 
 class BridgeClientError(RuntimeError):
@@ -26,18 +26,23 @@ class BridgeClient:
     @classmethod
     def from_file(cls, path):
         config = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls(config["token"], config.get("port", 8765), config.get("timeout", 10))
+        client = cls(config["token"], config.get("port", 8765), config.get("timeout", 10))
+        client.state_dir = Path(path).resolve().parent / "upstream"
+        return client
 
-    def call(self, method: str, params: dict | None = None) -> dict:
+    def call(self, method: str, params: dict | None = None, *, timeout: float | None = None) -> dict:
+        duration = self.timeout if timeout is None else timeout
+        if type(duration) not in (int, float) or not math.isfinite(duration) or not 0 < duration <= 120:
+            raise ValueError("Operation timeout must be between 0 and 120 seconds")
         request_id = uuid.uuid4().hex
         request = {"id": request_id, "token": self.token, "method": method,
-                   "params": params or {}, "deadline": time.time() + self.timeout * 0.8}
+                   "params": params or {}, "deadline": time.time() + min(duration * 0.8, 12)}
         payload = (json.dumps(request, allow_nan=False) + "\n").encode("utf-8")
         if len(payload) > MAX_FRAME:
-            raise BridgeClientError("Request exceeds 1 MiB")
-        until = time.monotonic() + self.timeout
+            raise BridgeClientError("Request exceeds 16 MiB")
+        until = time.monotonic() + duration
         try:
-            with socket.create_connection(("127.0.0.1", self.port), self.timeout) as sock:
+            with socket.create_connection(("127.0.0.1", self.port), duration) as sock:
                 sock.settimeout(max(0.001, until - time.monotonic()))
                 sock.sendall(payload)
                 response = bytearray()
@@ -51,7 +56,7 @@ class BridgeClient:
                         raise BridgeClientError("Bridge disconnected; write outcome is unknown. Inspect the Set before retrying.")
                     response.extend(part)
                     if len(response) > MAX_FRAME:
-                        raise BridgeClientError("Bridge response exceeds 1 MiB; inspect state before retrying")
+                        raise BridgeClientError("Bridge response exceeds 16 MiB; inspect state before retrying")
         except ConnectionRefusedError as exc:
             raise BridgeClientError("BRIDGE_UNAVAILABLE: Start Live and select AbletonArrangementMCP as a Control Surface") from exc
         except (OSError, TimeoutError) as exc:

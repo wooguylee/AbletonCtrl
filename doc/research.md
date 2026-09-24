@@ -12,8 +12,10 @@
 | [공식 MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) | stdio 서버·클라이언트와 도구 스키마를 구현하는 SDK. v1 범위 사용 |
 | [공식 Codex MCP 설정](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) | 프로젝트 또는 사용자 config.toml의 `mcp_servers`에 command·args 등록 |
 
-제3자 구현을 그대로 복사하거나 종속시키지 않고 필요한 인터페이스를 확인한 뒤
-독립적인 소규모 브리지를 작성했습니다. 외부 패키지는 MCP SDK와 그 의존성입니다.
+초기 버전은 독립 Arrangement bridge였으나 사용자의 원본 호환 요구에 따라
+현재 버전은 ahujasid/ableton-mcp의 MCP 도구·Live handler를 MIT 조건으로 포함합니다.
+기존 코드의 SHA256과 고정 commit은 `upstream-source.json`에 기록했습니다.
+외부 기본 의존성은 MCP SDK이며 선택적 dataset extra만 Supabase SDK를 사용합니다.
 
 ## 중요한 구분
 
@@ -36,3 +38,19 @@ XML 수정은 사용하지 않았습니다. 전자는 공개 지원 범위가 �
 현재 버전과 API capability는 `ableton_status`, `ableton_list_tracks`로 확인합니다.
 조회되는 capability는 메서드 존재 여부이며 해당 작업의 성공을 미리 보증하지 않습니다.
 SDK 설치 버전은 `requirements-tested.txt`, 실행 결과는 `verification.md`에 기록합니다.
+
+## 원본 MCP 통합 조사
+
+[원본 고정 버전](https://github.com/ahujasid/ableton-mcp/tree/9dddc7bd5b95412510fdeb745949e3bf23f3fd8a)을
+확인하고 37개 공개 도구의 이름·함수 시그니처를 `upstream-tools.json`에 저장했습니다.
+조사 시점 main에는 Arrangement 조회·이름·Session 복사 등의 일부 기능이 이미 있습니다.
+사용자의 다른 PC에 설치된 과거 버전은 직접 확인하지 않았습니다.
+
+원본은 MCP 프로세스와 Live Remote Script를 TCP로 연결합니다. 여기서는 음악 처리
+본문을 보존하면서 한 개의 인증 bridge로 라우팅하고 원본의 별도 네트워크 스레드를
+생성하지 않습니다. 원본 dataset/telemetry 기능은 명시적인 설정과 동의가 있는 경우에만
+사용하도록 기본 비활성화했습니다. 호환 범위는 [compatibility.md](compatibility.md)에 있습니다.
+
+공식 Clip LOM에서 `get_notes_by_id`, `apply_note_modifications`, `remove_notes_by_id`를
+확인해 MIDI 노트를 지우고 다시 만드는 대신 ID 기준 편집을 추가했습니다. Max LOM의
+dictionary 표기를 Python 객체 호출로 바꾸는 부분은 실제 Live 12에서 확인해야 합니다.

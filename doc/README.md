@@ -1,37 +1,63 @@
-# Ableton Arrangement MCP
+# AbletonCtrl 0.2
 
-Ableton Live **12 Suite**의 Arrangement 클립을 MCP 클라이언트에서 다루기 위한
-기본 구현입니다. 클립 이름이나 배열 번호 대신 현재 Live 연결에서 발급한 식별자로
-대상을 지정합니다.
+기존 [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp)의 기능을 유지하고
+Arrangement 클립 제어를 확장한 MCP입니다. **원본 37개 + 확장 14개 = 51개 도구**를
+하나의 MCP 서버와 하나의 Live Remote Script에서 제공합니다.
 
-**현재 상태:** 기본 코드와 자동 검증을 제공하며, 실제 Live 내부 구동 검증은 남아
-있습니다. 이 작업 환경에서는 실행 중인 Ableton을 발견하지 못했습니다. 연결 설정은
-`doc/local/`에 생성했고, 실제 User Library 설치와 Control Surface 선택은 아직 하지 않았습니다.
+**대상:** Ableton Live 12 Suite, Python 3.10 이상(외부 MCP 프로세스), Windows/macOS.
+자동 테스트와 Windows 패키지 설치를 검증했습니다. **실제 Live 및 macOS 구동 검증은
+아직 남아 있습니다.** 기능과 입력 규약 보존이 모든 Live 버전의 실행 성공을 뜻하지는 않습니다.
 
-## 제공 기능
+## 기능
 
-| 대상 | 기능 |
+| 영역 | 제공 기능 |
 | --- | --- |
-| Live / 트랙 | 연결 상태, 버전, 템포, 박자, 트랙 목록, API 지원 여부 |
-| Arrangement MIDI·오디오 클립 | 목록·상세, 이름·색상·음소거 변경, 같은 트랙 내 복제, 삭제 |
-| Arrangement MIDI 클립 | 빈 클립 생성, 노트 조회·추가 |
-| 편집 보호 | 오래된 식별자 거부, 겹치는 생성·복제 거부, 녹음·Freeze 중 편집 거부 |
+| 기존 MCP | Session·트랙 조회, MIDI/오디오 트랙 생성, 이름 변경, Session MIDI/오디오 클립 생성·실행·정지·삭제, 노트 조회·추가·삭제 |
+| 장치·브라우저 | 파라미터 조회·변경, 브라우저 검색, 악기·이펙트·Drum Kit 로딩 |
+| 기존 Arrangement | View 전환, 재생 위치·Locator, Session 클립을 Arrangement에 복사, 목록·이름 변경 |
+| 확장 Arrangement | ID로 조회·선택, MIDI 클립 생성, 오디오 파일 가져오기, 같은 트랙 복제·이동·삭제, 이름·색상·음소거 변경 |
+| 확장 MIDI 편집 | 노트 조회·추가, note_id로 일부 노트 수정·삭제 |
+| 선택적 데이터셋 | 원본 동의·의도·평가·선호·거절·청취 기록 도구 6개 유지. 기본 꺼짐, 음악 제어에 불필요 |
 
-직접 이동·트리밍, 다른 트랙으로 복사, Session 클립 편집, 오디오 파일 가져오기,
-Take Lane/오토메이션 편집, Set 저장은 현재 도구에 포함하지 않았습니다.
-음악 생성 AI나 외부 OpenAI API 키 없이 MCP 프로토콜로 동작합니다.
+확장 생성·복제·이동은 기존 클립과 겹치면 거부합니다. 이동은 복사본을 검증한 뒤 원본을
+삭제하며 새 clip_id를 반환합니다. 오디오 가져오기는 길이를 미리 알 수 없어 트랙의
+마지막 클립 이후에서만 허용합니다. 원본 도구는 기존 입력·동작을 유지하므로 이 보호
+규칙이 원본 도구 전체에 적용되지는 않습니다.
+
+**제공하지 않는 작업:** 임의의 타임라인 트리밍/리사이즈, 겹치는 구간으로 이동,
+서로 다른 트랙 간 Arrangement 복사, Take Lane/Comping/오토메이션 편집, 자동 Set 저장.
+Live 공개 API의 제약은 [조사 문서](research.md)에 설명했습니다.
+
+## 가져다 사용하기
+
+```powershell
+git clone https://github.com/wooguylee/AbletonCtrl.git
+cd AbletonCtrl
+py -3.12 -m venv .venv
+.venv\Scripts\python -m pip install .
+.venv\Scripts\python scripts\configure.py --user-library 'D:\Ableton\User Library'
+```
+
+마지막 경로는 Live 설정에서 확인한 실제 User Library로 바꿉니다. Live를 재시작하고
+Control Surface에 `AbletonArrangementMCP`를 선택합니다. 기존 `AbletonMCP` 선택과
+이전 MCP 클라이언트 등록은 해제하고, 생성된 `doc/local/codex-config.toml` 또는
+`doc/local/mcp-client.json`을 클라이언트 설정에 병합합니다.
+
+자세한 순서와 연결 검사는 [설치·전환 안내](setup.md), 다른 PC와 macOS는
+[English quickstart](quickstart-en.md)를 참고하세요. 특정 Ableton MCP 제품을 써야 하는
+제약은 없습니다. Codex는 이 프로젝트 같은 stdio MCP 서버를 등록해 사용할 수 있습니다.
 
 ## 문서
 
-- [설치와 연결](setup.md)
-- [10개 MCP 도구와 사용 예](tools.md)
-- [구조·프로토콜·다른 프로젝트 재사용](reuse.md)
-- [인터넷 조사와 출처](research.md)
-- [검증 결과와 Live 확인 절차](verification.md)
-- [프로젝트 메모리](PROJECT_MEMORY.md)
-- [설계](design.md), [구현 계획](implementation-plan.md), [작업 기록](progress.md)
-- [현재 대화 기록](conversations/2026-09-24.md)
+- [설치·Codex 연결·기존 MCP에서 전환](setup.md)
+- [English quickstart](quickstart-en.md)
+- [51개 도구와 호출 예](tools.md)
+- [원본 호환성·라이선스·선택적 데이터셋](compatibility.md)
+- [코드 구조·프로토콜·재사용](reuse.md)
+- [인터넷 조사와 근거](research.md)
+- [검증 결과·실제 Live 점검](verification.md)
+- [프로젝트 메모리](PROJECT_MEMORY.md), [대화 기록](conversations/2026-09-24.md)
 
-프로젝트 자료·대화 기록·메모리는 `doc/` 아래에 보관합니다. 다음 작업에서도 이를
-따르도록 프로젝트 루트의 `AGENTS.md`에 규칙을 남겼습니다. Codex 앱 자체가 관리하는
-세션 저장 위치는 이 규칙으로 바뀌지 않습니다.
+원본 기준은 commit `9dddc7bd5b95412510fdeb745949e3bf23f3fd8a` (MCP 1.4.5,
+Remote Script 1.7.1)입니다. 자동으로 upstream 최신 버전을 내려받지 않습니다.
+토큰·가상환경·개인 대화 원본은 Git에 포함하지 않습니다.

@@ -1,3 +1,4 @@
+ableton-arrangement-mcp==0.2.0
 annotated-types==0.8.0
 anyio==4.15.1
 attrs==26.1.0

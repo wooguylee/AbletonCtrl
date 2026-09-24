@@ -1,64 +1,76 @@
-# 검증 결과 — 2026-09-24
+# 검증 결과 — 2026-09-24, AbletonCtrl 0.2.0
 
-## 결과
+**자동 테스트 29개 통과, 독립 Python 환경의 wheel 설치 및 51개 MCP 도구 검색 통과.**
+실제 Ableton Live 프로세스 안에서의 실행, macOS, 선택적 Supabase 업로드는 검증하지 않았습니다.
+현재 PC의 실제 User Library에 설치하거나 사용자의 Set을 편집하지 않았습니다.
 
-**자동 테스트 20/20 통과.** 기본 MCP 코드·설치 도우미·문서 구현을 완료했습니다.
-실제 Ableton Live 프로세스 안에서의 실행은 아직 검증하지 않았습니다.
+## 실행한 검사
 
 | 검사 | 결과 |
 | --- | --- |
-| Python 환경 | Python 3.12.10, MCP SDK 1.30.0, Windows |
-| `pip install -e .` | 성공 |
+| Python / MCP SDK | Windows, Python 3.12.10 / MCP 1.30.0 |
+| `python -m unittest discover -s tests -v` | 29 tests, OK |
 | `python -m pip check` | No broken requirements found |
-| `python -m unittest discover -s tests -v` | 20 tests, OK |
 | `python -m compileall -q src remote_script scripts tests` | 성공 |
-| Remote Script 4개 파일 Python 3.7 문법 파싱 | 성공; 실제 내장 런타임 검증을 뜻하지 않음 |
-| stdio MCP subprocess | initialize → 10개 도구 검색 → 상태/생성/편집/노트/복제/삭제/오류 처리 통과 |
-| Live 연결 `--check` | `BRIDGE_UNAVAILABLE`, exit 1. Live 미실행·미설치 상태 |
-| 검증 후 프로세스/포트 | 테스트가 띄운 MCP 프로세스 종료, 기본 8765 listening 없음 |
+| Live 측 5개 Python 파일의 Python 3.7 문법 파싱 | 성공 (실제 Live 런타임 검증과 별개) |
+| 원본 MCP 37개 전체 입력 JSON Schema 비교 | 이름·파라미터·기본값 보존 |
+| vendored 16개 파일 SHA256 / 원본 git object 비교 | 고정 commit과 byte 단위 일치; LF checkout 규칙 포함 |
+| wheel 제작·별도 venv 설치 | 서버·Live Script·MIT LICENSE 포함 확인 |
+| `scripts/verify_wheel.py` | 소스 밖 임시 프로젝트에 설치, native 파일 hash 일치, 생성 설정으로 stdio 51개 검색 성공 |
+| 실제 Live 연결 | 최초 `--check`는 BRIDGE_UNAVAILABLE; Live 실기 검증 미수행 |
 
-전체 자동 테스트 출력: [test-results.txt](test-results.txt).
-설치된 패키지 버전: [requirements-tested.txt](requirements-tested.txt).
-버전 목록은 이번 Windows 환경의 기록이며 다른 운영체제에서는 `pyproject.toml`로
-의존성을 설치하세요.
+[test-results.txt](test-results.txt)에 unittest 출력,
+[requirements-tested.txt](requirements-tested.txt)에 검증 환경 버전을 기록했습니다.
+wheel은 `doc/local/dist/`에 생성되며 배포 소스만 Git에 올립니다.
 
-## 확인한 동작
+## 통합 검증 범위
 
-- 클립 순서 변경 후에도 원래 대상 편집, 삭제·트랙 제거 후 오래된 식별자 거부.
-- 생성·복제·삭제, Undo 단계 균형, native API 예외 후 Undo 단계 종료.
-- 겹치는 구간, 잘못된 타입·숫자·필드, Freeze·녹음 모드, 지원되지 않는 API 거부.
-- clip-local MIDI 노트 좌표, pitch 127 포함 조회, 스펙 객체로 노트 추가.
-- 실제 TCP의 분할 프레임, 인증 실패, 만료, malformed JSON, 1 MiB 초과 연결 종료.
-- 같은 쓰기 요청 ID 재사용 시 추가 실행 방지, 타임아웃 뒤 늦게 도착한 생성 미실행.
-- 실제 MCP 도구 schema/annotation/structuredContent와 오류의 `isError` 전파.
-- 설치 실패 시 기존 설정 보존, 설치 업데이트 백업, 공개 대화와 숨겨진 메시지 분리.
+실제 stdio MCP subprocess → 인증 TCP → 통합 ArrangementSurface dispatch → fake Live
+객체 순서로 실행했습니다. Live의 원본 handler 코드를 사용하되 native 객체를 모형으로
+대체했습니다. 이는 모든 도구를 실제 Live에서 사용했다는 뜻은 아닙니다.
 
-## 독립 코드 검토
+- 원본 Session/트랙 조회·생성·이름, 클립 생성·이름·노트·실행·정지·삭제.
+- 원본 장치 파라미터 조회·수정, 재생·정지, Arrangement 시각·목록, 전체 snapshot.
+- 동일 연결에서 확장 Arrangement 생성·메타데이터·복제·이동·삭제와 MIDI 추가·수정·삭제.
+- handle 순서 변경·삭제, note_id 만료, 겹침·녹음·Freeze 거부, 실패 후 Undo 단계 종료.
+- 이동 중 원본 삭제 실패 시 복사본/원본 상태와 오류 보고, 오디오 import의 마지막 클립 보호.
+- 분할 TCP 프레임·인증·만료·재사용 ID·타임아웃 후 늦은 쓰기 거부·16 MiB 초과 제한.
+- Live 접근의 주 스레드 제한, 원본 schedule_message 큐 대기로 인한 교착 방지.
+- 설치 실패 시 기존 설정 보존, 업데이트 백업, 다른 프로젝트 venv를 잘못 선택하지 않음.
 
-별도 읽기 전용 검토에서 두 문제를 재현했고 회귀 테스트로 수정했습니다.
+브라우저/음원/Pack 로딩과 모든 native 메서드의 세부 동작은 아래 실기 점검이 필요합니다.
+원본 기능은 source·schema 보존 및 주요 경로 테스트로 확인했고, 특정 PC의 콘텐츠/플러그인
+호환성을 보증하지 않습니다.
 
-1. 설치 실패 전에 로컬 포트를 바꾸던 문제: 대상 확인·복사 이후에 연결 설정 저장.
-2. 환경 정보로 시작한 사용자 메시지의 실제 요청이 빠지던 문제: 알려진 앞부분
-   메타데이터 블록만 제거하고 나머지 사용자 텍스트 보존.
+## 독립 코드 리뷰
 
-두 테스트 모두 수정 전 실패와 수정 후 성공을 확인했습니다. 검토자가 확인하지
-못한 native 동작은 아래 Live 검증으로 남겼습니다. 기본 API/전송 코드에서 추가로
-확인된 차단 문제는 없었지만 실제 Live 호환성을 보증하는 검토 결과는 아닙니다.
+읽기 전용 리뷰에서 다음 두 문제를 발견하고 수정한 뒤 재검증했습니다.
 
-## Live 12 Suite에서 남은 수동 검증
+1. 선택적 Live UI 수집이 꺼져도 해당 capability를 광고하던 문제: 비활성 상태에서는
+   `drain_passive_events`를 광고하지 않아 원본 데이터셋의 오래된 pre-state 재사용 방지.
+2. 재사용 대상 프로젝트의 무관한 `.venv`를 선택하던 설치 문제: 실제 패키지가 설치된
+   installer의 `sys.executable`을 사용. 회귀 테스트 추가.
 
-실제 사용자 Set 대신 **새 빈 Set 또는 별도 사본**에서 확인합니다.
+리뷰어는 수정 확인 후 열린 코드 차단 항목이 없음을 보고했습니다. 초기 0.1 버전에서
+수정한 설치 실패 설정 보존·대화 metadata 처리 회귀 테스트도 계속 통과합니다.
 
-1. [설치 안내](setup.md)에 따라 정확한 User Library에 설치하고 Control Surface 활성화.
-2. `--check`에서 실제 Live 버전 출력. `ableton_list_tracks`에서 필요한 capability 확인.
-3. 빈 MIDI 트랙에 beat 0, 길이 4인 클립을 생성하고 4개 음표를 넣어 화면·재생 확인.
-4. 이름·색상·muted 변경 후 상세 조회와 화면이 일치하는지 확인.
-5. beat 4로 복제한 뒤 위치·길이·노트 유지 확인. 복제본만 삭제하고 Live Undo 확인.
-6. 별도 오디오 클립, 루프 반복 클립, 잘린 클립으로 같은 트랙 복제를 확인.
-   타임라인 외곽 길이와 실제 복제 범위가 같은지 확인해야 합니다.
-7. UI에서 클립/트랙 순서 변경·삭제·Undo 후 오래된 식별자가 다른 대상을 가리키지 않는지 확인.
-8. 모달 창·Set 변경·Live 재시작 후 재연결, Control Surface 해제 시 소켓 종료 확인.
+## Live 12 Suite 실기 확인 절차
 
-Max LOM과 Python Remote Script의 메서드 반환값, Live 객체 무효화·동등성, 실제 MIDI
-생성자, `update_display` callback과 Undo 동작은 이 단계에서 최종 확인해야 합니다.
-현재 구현은 이를 위한 기본 코드와 재현 가능한 검증 경로를 제공합니다.
+새 빈 Set 또는 별도 사본으로 실행합니다. 각 편집 후 화면과 새 조회를 함께 확인합니다.
+
+1. [설치/전환](setup.md) 후 `--check`, `get_remote_script_info`, 51개 도구 확인.
+2. 원본 Session: MIDI/오디오 트랙 생성, Session MIDI 클립·노트 생성/조회/삭제,
+   이름 변경, fire/stop/delete, Session audio import를 확인합니다.
+3. 원본 Browser: 설치된 악기/이펙트/Drum Kit를 검색·로딩하고 파라미터 조회/변경.
+   원본 snapshot, Locator, Arrangement view/time, Session→Arrangement 복사도 확인합니다.
+4. 확장 MIDI: 빈 구간에 4 beat 클립 생성, 노트 추가·note_id 수정·삭제, 색상·muted 변경.
+5. 복제/이동: 자유 구간에서 위치·길이·노트·loop·clip envelope가 유지되는지 확인하고
+   반환된 새 ID로 조회합니다. 원본 삭제 실패 시 자동으로 재시도하지 않습니다.
+6. 오디오: MIDI 트랙 오용 거부, 마지막 클립 이후 파일 import, 실제 warp/길이,
+   같은 트랙 복제·이동·삭제를 확인합니다. 실제 오디오 포맷 지원은 Live가 결정합니다.
+7. 잘린/반복/자동화가 포함된 클립의 복제 내용, Undo/Redo 후 handle 무효화를 확인합니다.
+8. 녹음·Freeze·겹침 거부, 모달 창·Set 변경·Live 재시작 후 목록 재조회,
+   Control Surface 해제 시 socket 종료를 확인합니다.
+
+Native MidiNoteSpecification/NoteVector 호출, 객체 동등성/무효화, Live callback/Undo,
+오디오 가져오기와 clip automation 보존은 이 단계에서 최종 확인해야 합니다.

@@ -9,6 +9,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 from .client import BridgeClient, BridgeClientError
+from .compatibility import register_upstream_tools, compatibility_lifespan
 
 Beat = Annotated[float, Field(ge=0, le=1576800, strict=True, allow_inf_nan=False)]
 Duration = Annotated[float, Field(gt=0, le=1576800, strict=True, allow_inf_nan=False)]
@@ -17,6 +18,7 @@ Offset = Annotated[int, Field(ge=0, le=1576800, strict=True)]
 PageSize = Annotated[int, Field(ge=1, le=100, strict=True)]
 Color = Annotated[int, Field(ge=0, le=0xFFFFFF, strict=True)]
 Name = Annotated[str, Field(max_length=256, strict=True)]
+NoteId = Annotated[int, Field(ge=0, le=2**53 - 1, strict=True)]
 
 
 class MidiNote(BaseModel):
@@ -28,6 +30,16 @@ class MidiNote(BaseModel):
     mute: bool = False
 
 
+class MidiNoteUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    note_id: NoteId
+    pitch: Annotated[int, Field(ge=0, le=127)] | None = None
+    start_time: ClipBeat | None = None
+    duration: Duration | None = None
+    velocity: Annotated[float, Field(ge=0, le=127, allow_inf_nan=False)] | None = None
+    mute: bool | None = None
+
+
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
 ADD = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
 EDIT = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False)
@@ -35,8 +47,10 @@ DELETE = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHin
 
 
 def create_server(client: BridgeClient) -> FastMCP:
-    mcp = FastMCP("Ableton Arrangement MCP", log_level="WARNING", instructions=(
-        "Control Arrangement clips in a running Ableton Live 12 Set. First list tracks and clips; "
+    mcp = FastMCP("AbletonCtrl", log_level="WARNING", lifespan=compatibility_lifespan, instructions=(
+        "Control Ableton Live 12 using the original ableton-mcp tools plus extended Arrangement tools. "
+        "Original tools retain zero-based track/clip indices; re-list after structural changes. "
+        "For ableton_ prefixed tools, first list tracks and clips; "
         "use returned opaque handles, never guessed indices. Song positions are zero-based quarter-note beats. "
         "MIDI note positions are clip-local beats. No automatic retries after timeout: inspect state. "
         "Creation/duplication rejects overlaps. Do not describe writes as saved to disk. "
@@ -78,9 +92,20 @@ def create_server(client: BridgeClient) -> FastMCP:
         return await call("create_midi_clip", track_id=track_id, start_beats=start_beats, length_beats=length_beats)
 
     @mcp.tool(annotations=ADD)
+    async def ableton_create_arrangement_audio_clip(track_id: str, file_path: str, start_beats: Beat) -> dict[str, Any]:
+        """Import an existing absolute audio file on the Live PC at/after the track's LAST clip. Length depends on Live warp settings."""
+        return await asyncio.to_thread(client.call, "create_audio_clip",
+                                       {"track_id": track_id, "file_path": file_path, "start_beats": start_beats}, timeout=70)
+
+    @mcp.tool(annotations=ADD)
     async def ableton_duplicate_arrangement_clip(clip_id: str, destination_beats: Beat) -> dict[str, Any]:
         """Duplicate a MIDI/audio Arrangement clip on the SAME track at a free song position in beats."""
         return await call("duplicate_clip", clip_id=clip_id, destination_beats=destination_beats)
+
+    @mcp.tool(annotations=DELETE)
+    async def ableton_move_arrangement_clip(clip_id: str, destination_beats: Beat) -> dict[str, Any]:
+        """Move on the SAME track by verified copy then delete in one Undo step. Return a NEW clip_id. Destination must not overlap any clip, including source; partial failures require inspection."""
+        return await call("move_clip", clip_id=clip_id, destination_beats=destination_beats)
 
     @mcp.tool(annotations=DELETE)
     async def ableton_delete_arrangement_clip(clip_id: str) -> dict[str, Any]:
@@ -100,6 +125,19 @@ def create_server(client: BridgeClient) -> FastMCP:
         """Add 1-256 notes without replacing existing notes. start_time is clip-local beats; pitch is MIDI 0-127."""
         return await call("add_notes", clip_id=clip_id, notes=[n.model_dump() for n in notes])
 
+    @mcp.tool(annotations=EDIT)
+    async def ableton_update_midi_notes(clip_id: str,
+                                      notes: Annotated[list[MidiNoteUpdate], Field(min_length=1, max_length=256)]) -> dict[str, Any]:
+        """Update notes by note_id from ableton_get_midi_notes; omit unchanged fields. Fails if any ID is stale."""
+        return await call("update_notes", clip_id=clip_id, notes=[n.model_dump(exclude_none=True) for n in notes])
+
+    @mcp.tool(annotations=DELETE)
+    async def ableton_delete_midi_notes(clip_id: str,
+                                      note_ids: Annotated[list[NoteId], Field(min_length=1, max_length=256)]) -> dict[str, Any]:
+        """Delete specific MIDI notes by current note_id, preserving all other notes. Fails if any ID is stale."""
+        return await call("delete_notes", clip_id=clip_id, note_ids=note_ids)
+
+    register_upstream_tools(mcp, client)
     return mcp
 
 

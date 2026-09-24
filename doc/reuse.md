@@ -17,14 +17,23 @@ flowchart LR
 | `remote_script/AbletonArrangementMCP/api.py` | Arrangement 대상 확인, 검증, Live API 호출 |
 | `remote_script/AbletonArrangementMCP/transport.py` | 인증·프레임 처리·중복 ID·nonblocking 소켓 |
 | `remote_script/AbletonArrangementMCP/surface.py` | Live 진입, main-thread callback, 종료 |
-| `scripts/configure.py` | 설정 생성, 명시한 User Library 설치, 업데이트 백업 |
+| `src/ableton_arrangement_mcp/installer.py` (`scripts/configure.py`에서 호출) | 설정 생성, 명시한 User Library 설치, 업데이트 백업 |
 | `scripts/export_conversation.py` | 지정한 세션의 공개 대화 메시지를 `doc/conversations/`에 복사 |
 | `tests/` | 가짜 Live 모델, 실제 TCP·MCP 통합 검증 |
 
-이 경로들은 프로젝트 루트 기준입니다. Python 클라이언트 패키지만 배포하면 Live
-안에서 실행되는 Remote Script가 빠집니다. **다른 곳에 가져갈 때는 위 소스와
-`pyproject.toml`, `scripts`, `doc`를 함께 복사**하고 새 환경에서 설치하세요.
-`pip install .`은 MCP 서버만 설치합니다. Remote Script는 별도 단계입니다.
+이 경로들은 프로젝트 루트 기준입니다. wheel에는 서버와 통합 Live Script가 모두
+포함됩니다. `pip install .` 또는 Git URL 설치 후 `abletonctrl-install`로
+User Library에 배치합니다. 소스를 재사용할 때에는 MIT LICENSE와 원본 출처를 보존하세요.
+
+`compatibility.py`는 원본 도구의 입력·반환 형식을 보존하고 `upstream.` 명령으로
+인증 bridge에 연결합니다. `upstream/`의 원본 서버 코드는 별도 MCP나 소켓을 실행하지
+않습니다. `surface.py`는 원본 Live handler를 상속하되 원본 네트워크 생성자를 호출하지
+않고, 주 스레드에서 읽기·쓰기를 모두 실행합니다. 원본의 schedule_message(0) 후
+큐 대기는 같은 주 스레드에서 즉시 실행해 교착을 피합니다.
+
+원본 파일 목록·SHA256은 [upstream-source.json](upstream-source.json)에 있습니다.
+원본 갱신 시 tool schema 비교와 old/new 통합 테스트를 먼저 실행하세요.
+`upstream/config.py`는 이 프로젝트가 추가한 선택적 backend 설정이며 원본 파일이 아닙니다.
 
 가상환경·캐시·인증 토큰·기존 대화 로그는 재사용 코드에 포함할 필요가 없습니다.
 Live 안에 MCP/Pydantic 의존성을 넣지 마세요. 내부 브리지는 표준 라이브러리만
@@ -61,8 +70,8 @@ UTF-8 JSON + LF로 교환하고 연결을 닫습니다. 호스트는 `127.0.0.1`
 ```
 
 `deadline` 예시 값은 실제 호출에 재사용하지 말고 `time.time() + 8`처럼 계산합니다.
-최대 15초 이내의 Unix 시각이어야 합니다. 메서드 이름은 `api.py`의 `METHODS` 목록에
-제한됩니다. 임의 Python 실행이나 객체 메서드 호출은 제공하지 않습니다.
+최대 15초 이내의 Unix 시각이어야 합니다. 메서드 이름은 `api.py`의 `METHODS` 및 `surface.py`의 `UPSTREAM_COMMANDS` 목록에
+제한됩니다. 후자는 `upstream.` 접두어를 붙입니다. 임의 Python 실행이나 객체 메서드 호출은 제공하지 않습니다.
 
 ```json
 {"id":"요청과 동일", "result":{"tracks":[],"total":0,"offset":0}}
@@ -72,8 +81,8 @@ UTF-8 JSON + LF로 교환하고 연결을 닫습니다. 호스트는 `127.0.0.1`
 {"id":"요청과 동일", "error":{"code":"STALE_HANDLE","message":"..."}}
 ```
 
-프레임은 최대 1 MiB, 동시 소켓은 8개입니다. tick당 소켓별 수신·송신은 각각 최대
-64 KiB입니다. 오래된 연결은 15초 뒤 닫습니다. 최근 2,048개 처리 ID만 기억하므로
+프레임은 최대 16 MiB, 동시 소켓은 8개입니다. tick당 소켓별 수신·송신은 각각 최대
+256 KiB입니다. 오래된 연결은 15초 뒤 닫습니다. 최근 2,048개 처리 ID만 기억하므로
 영구적인 exactly-once 보장은 없습니다. 클라이언트는 원래부터 자동 재시도하지 않습니다.
 시간이 만료된 요청은 Live API 호출 직전에 거부됩니다. 호출 후 응답 손실은 처리
 완료 여부를 보장할 수 없으므로 새 조회로 상태를 확인해야 합니다.
@@ -90,10 +99,16 @@ UTF-8 JSON + LF로 교환하고 연결을 닫습니다. 호스트는 `127.0.0.1`
 4. MCP 도구의 스키마·설명·readOnly/destructive/idempotent annotation을 추가합니다.
 5. 가짜 API 테스트와 실제 stdio 통합 테스트를 확장하고 별도 Live Set에서 검증합니다.
 
-이동을 “복제 후 삭제”로 확장하면 부분 실패, 원본과 목적지 겹침, 자동화 보존을
-다뤄야 합니다. 단순히 `clip.start_time`에 값을 쓰거나 loop marker를 Arrangement
-시작 위치로 취급해서는 안 됩니다. 오디오 가져오기는 파일 존재·Live 지원 포맷·샘플
-참조 경로와 변경되는 클립 길이를 확인하는 별도 기능으로 추가할 수 있습니다.
+현재 이동은 복사본의 위치·길이·종류 확인 후 원본을 지우는 방식입니다. 원본 삭제
+실패 시 PARTIAL_MOVE로 두 ID를 보고하며 자동 Undo/재시도하지 않습니다. 실제
+클립 자동화·루프·오디오 내용 보존 여부는 Live 수동 검증 대상입니다. `start_time`이나
+`end_time`에 직접 쓰지 않습니다. 오디오 import는 Live PC의 절대 파일 경로를 받고,
+길이가 사전에 확정되지 않으므로 트랙 마지막 클립 이후만 허용합니다.
+
+클라이언트 기본 응답 제한 시간은 10초, 오디오·일부 브라우저/스냅샷은 70초입니다.
+요청의 deadline은 **실행 시작 허용 시각**이며 작업 자체를 중단하는 시간이 아닙니다.
+긴 Live 호출 뒤 응답을 보낼 시간을 새로 부여합니다. 원본 복합 도구는 여러 bridge
+명령을 실행할 수 있으므로 MCP 클라이언트에는 180초 제한을 권장합니다.
 
 ## 대화와 메모리 기록
 

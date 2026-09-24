@@ -1,78 +1,114 @@
-# MCP 도구 사용법
+# 51개 MCP 도구
 
-## 좌표와 식별자
+원본 37개는 이름·입력 schema·반환 규약을 유지합니다. 기존 원본 도구에 대한
+[호환 범위와 데이터셋 설정](compatibility.md)을 함께 확인하세요.
 
-- Arrangement 시간은 **4분음표 기준 beat**입니다. `0`은 곡의 `1.1.1` 위치입니다.
-- 4/4에서 1마디는 4 beats, 5마디 시작은 16 beats입니다. 다른 박자는
-  `분자 × 4 / 분모`로 마디 길이를 계산합니다. 박자 변경이 있으면 구간별로 계산해야 합니다.
-- MIDI 노트 `start_time`은 **클립 내부 좌표**입니다. Arrangement 시작 위치를 더해서
-  노트를 넣으면 안 됩니다. 루프·클립 시작 오프셋은 별도로 고려합니다.
-- `track_id`, `clip_id`는 목록에서 반환된 문자열을 그대로 사용합니다. 이름이나
-  트랙 번호로 만들 수 없습니다. Bridge 재시작, Set 변경, 삭제, 캐시 퇴출 후 재조회합니다.
-- 목록의 `index`는 표시용 0 기반 순서입니다. 편집 대상은 항상 식별자로 전달합니다.
+## 원본 도구 37개
 
-## 10개 도구
+| 도구 | 입력 시그니처 (ctx는 MCP가 주입) |
+| --- | --- |
+| `set_dataset_consent` | `ctx: Context, consent: bool, user_said: str=''` |
+| `get_session_info` | `ctx: Context, user_prompt: str=''` |
+| `get_remote_script_info` | `ctx: Context, user_prompt: str=''` |
+| `get_track_info` | `ctx: Context, track_index: int, user_prompt: str=''` |
+| `get_clip_notes` | `ctx: Context, track_index: int, clip_index: int, user_prompt: str=''` |
+| `get_device_parameters` | `ctx: Context, track_index: int, device_index: int, user_prompt: str=''` |
+| `set_device_parameter` | `ctx: Context, track_index: int, device_index: int, parameter_index: int, value: float, user_prompt: str=''` |
+| `get_session_snapshot` | `ctx: Context, include_notes: bool=True, include_params: bool=True, user_prompt: str=''` |
+| `create_midi_track` | `ctx: Context, index: int=-1, user_prompt: str=''` |
+| `create_audio_track` | `ctx: Context, index: int=-1, user_prompt: str=''` |
+| `set_track_name` | `ctx: Context, track_index: int, name: str, user_prompt: str=''` |
+| `create_clip` | `ctx: Context, track_index: int, clip_index: int, length: float=4.0, user_prompt: str=''` |
+| `create_audio_clip` | `ctx: Context, track_index: int, clip_index: int, path: str, user_prompt: str=''` |
+| `add_notes_to_clip` | `ctx: Context, track_index: int, clip_index: int, notes: List[Dict[str, Union[int, float, bool]]], user_prompt: str=''` |
+| `clear_notes_from_clip` | `ctx: Context, track_index: int, clip_index: int, user_prompt: str=''` |
+| `set_clip_name` | `ctx: Context, track_index: int, clip_index: int, name: str, user_prompt: str=''` |
+| `set_arrangement_clip_name` | `ctx: Context, track_index: int, clip_index: int, name: str, user_prompt: str=''` |
+| `set_tempo` | `ctx: Context, tempo: float, user_prompt: str=''` |
+| `load_instrument_or_effect` | `ctx: Context, track_index: int, uri: str, user_prompt: str=''` |
+| `fire_clip` | `ctx: Context, track_index: int, clip_index: int, user_prompt: str=''` |
+| `stop_clip` | `ctx: Context, track_index: int, clip_index: int, user_prompt: str=''` |
+| `delete_clip` | `ctx: Context, track_index: int, clip_index: int, user_prompt: str=''` |
+| `start_playback` | `ctx: Context, user_prompt: str=''` |
+| `stop_playback` | `ctx: Context, user_prompt: str=''` |
+| `get_browser_tree` | `ctx: Context, category_type: str='all', user_prompt: str=''` |
+| `get_browser_items_at_path` | `ctx: Context, path: str, user_prompt: str=''` |
+| `load_drum_kit` | `ctx: Context, track_index: int, rack_uri: str, kit_path: str, user_prompt: str=''` |
+| `switch_to_arrangement_view` | `ctx: Context, user_prompt: str=''` |
+| `set_arrangement_time` | `ctx: Context, time: float, user_prompt: str=''` |
+| `get_arrangement_clips` | `ctx: Context, track_index: int, user_prompt: str=''` |
+| `duplicate_to_arrangement` | `ctx: Context, track_index: int, clip_index: int, destination_time: float, user_prompt: str=''` |
+| `create_locator` | `ctx: Context, name: str, time: float, user_prompt: str=''` |
+| `submit_intent` | `ctx: Context, text: str, level: int=5, user_prompt: str=''` |
+| `rate_last_action` | `ctx: Context, rating: str, tags: str='', note: str='', user_prompt: str=''` |
+| `prefer_candidate` | `ctx: Context, candidate_a: str, candidate_b: str, winner: str, reason: str='', user_prompt: str=''` |
+| `reject_last_action` | `ctx: Context, reason: str='', user_prompt: str=''` |
+| `record_audition` | `ctx: Context, uri: str, kept: bool=False, search_query: str='', dwell_ms: float=0.0, user_prompt: str=''` |
 
-| MCP 이름 | 주요 입력 | 동작 |
-| --- | --- | --- |
-| `ableton_status` | 없음 | Live 버전, 템포·박자·재생 상태 |
-| `ableton_list_tracks` | `offset=0`, `limit=100` | 일반 트랙 목록·식별자·API capability |
-| `ableton_list_arrangement_clips` | `track_id`, 페이지 | 해당 트랙의 Arrangement 클립 목록 |
-| `ableton_get_arrangement_clip` | `clip_id` | 현재 클립 상태 |
-| `ableton_update_arrangement_clip` | `clip_id`, `name?`, `color?`, `muted?` | 지정한 속성만 수정 |
-| `ableton_create_arrangement_midi_clip` | `track_id`, `start_beats`, `length_beats` | 빈 MIDI 클립 생성 |
-| `ableton_duplicate_arrangement_clip` | `clip_id`, `destination_beats` | 같은 트랙의 빈 위치에 복제 |
-| `ableton_delete_arrangement_clip` | `clip_id` | 지정 클립 삭제 |
-| `ableton_get_midi_notes` | `clip_id`, `start_beats=0`, `length_beats=16`, `limit=1000` | 시작 시점이 범위 안인 노트 조회 |
-| `ableton_add_midi_notes` | `clip_id`, `notes` | 기존 노트를 유지하면서 1~256개 추가 |
+## 추가 Arrangement 도구 14개
 
-목록은 페이지당 최대 100개입니다. `total`과 `offset`을 확인하여 다음 페이지를
-읽습니다. 노트는 최대 1,000개를 반환하며 `truncated=true`이면 조회 시간 범위를
-좁힙니다. 기본 노트 범위가 클립 전체를 의미하지는 않습니다.
+| 도구 | 설명 |
+| --- | --- |
+| `ableton_status` | Read bridge connectivity, native Live version, tempo, meter and available bridge methods. |
+| `ableton_list_tracks` | List normal tracks and their opaque track_id handles, types and native API capabilities. |
+| `ableton_list_arrangement_clips` | List a track's Arrangement clips. Return stable clip_id handles and song start/end in beats. |
+| `ableton_get_arrangement_clip` | Inspect the current state of an Arrangement clip using a previously listed clip_id. |
+| `ableton_update_arrangement_clip` | Set name, RGB color (nearest Live palette color), or muted. Does not move/resize the clip. |
+| `ableton_create_arrangement_midi_clip` | Create an empty MIDI Arrangement clip on an existing MIDI track. Refuse overlapping clips. |
+| `ableton_create_arrangement_audio_clip` | Import an existing absolute audio file on the Live PC at/after the track's LAST clip. Length depends on Live warp settings. |
+| `ableton_duplicate_arrangement_clip` | Duplicate a MIDI/audio Arrangement clip on the SAME track at a free song position in beats. |
+| `ableton_move_arrangement_clip` | Move on the SAME track by verified copy then delete in one Undo step. Return a NEW clip_id. Destination must not overlap any clip, including source; partial failures require inspection. |
+| `ableton_delete_arrangement_clip` | Delete the identified Arrangement clip from the current Set. Destructive; grouped for Live Undo. |
+| `ableton_get_midi_notes` | Read MIDI notes whose onset is in a clip-local beat range; narrow the range if truncated. |
+| `ableton_add_midi_notes` | Add 1-256 notes without replacing existing notes. start_time is clip-local beats; pitch is MIDI 0-127. |
+| `ableton_update_midi_notes` | Update notes by note_id from ableton_get_midi_notes; omit unchanged fields. Fails if any ID is stale. |
+| `ableton_delete_midi_notes` | Delete specific MIDI notes by current note_id, preserving all other notes. Fails if any ID is stale. |
 
-`color`는 정수 RGB `0xRRGGBB` (0~16777215)이며 실제 Live 팔레트에서 가까운 색상이
-적용됩니다. `muted=true`는 클립 비활성화입니다. 오디오 클립의 내부 loop 좌표는
-Warp 상태에 따라 초 또는 beat이므로 `clip_time_unit`을 함께 확인하세요.
+## 선택과 시간 단위
 
-## 예: 빈 MIDI 클립에 4개 음표 추가
+원본 도구의 index는 0부터 시작합니다. 트랙·클립 추가/삭제 후 목록을 다시 조회하세요.
+추가 도구의 ID는 현재 Live 연결에서 받은 값만 사용합니다. Set/스크립트 재시작 또는
+오래된 handle 제거 후에는 다시 조회해야 합니다. 배열 순서가 바뀌어도 handle은 같은
+객체를 가리키며, 삭제된 대상의 ID는 STALE_HANDLE로 거부합니다.
 
-1. `ableton_status`로 연결을 확인합니다.
-2. `ableton_list_tracks`로 MIDI 트랙의 `track_id`를 얻습니다.
-3. `ableton_list_arrangement_clips`로 빈 구간을 확인합니다.
-4. 다음 인자로 `ableton_create_arrangement_midi_clip`을 호출합니다.
+Arrangement beat 0은 1.1.1, 4/4 기준 beat 4는 두 번째 마디입니다. 노트 start_time은
+클립 내부 beat이며 Arrangement 타임라인 시작값을 더하지 않습니다. 오디오의 loop
+marker 단위는 warping에 따라 seconds일 수 있고 snapshot에 clip_time_unit을 표시합니다.
 
-```json
-{"track_id":"목록에서 받은 track_id", "start_beats":16, "length_beats":4}
+## 호출 예
+
+아래 ID는 자리표시자입니다. 첫 조회에서 실제 값을 받은 다음 대입합니다.
+
+```text
+get_session_info {}
+create_midi_track {"index": -1}
+create_clip {"track_index": 2, "clip_index": 0, "length": 4}
+get_track_info {"track_index": 2}
+
+ableton_list_tracks {}
+ableton_list_arrangement_clips {"track_id": "<track_id>"}
+ableton_create_arrangement_midi_clip {"track_id": "<track_id>", "start_beats": 16, "length_beats": 4}
+ableton_add_midi_notes {"clip_id": "<clip_id>", "notes": [{"pitch": 60, "start_time": 0, "duration": 1, "velocity": 100}]}
+ableton_get_midi_notes {"clip_id": "<clip_id>", "start_beats": 0, "length_beats": 4}
+ableton_update_midi_notes {"clip_id": "<clip_id>", "notes": [{"note_id": 1, "pitch": 64}]}
+ableton_delete_midi_notes {"clip_id": "<clip_id>", "note_ids": [1]}
+ableton_move_arrangement_clip {"clip_id": "<clip_id>", "destination_beats": 24}
+ableton_create_arrangement_audio_clip {"track_id": "<audio_track_id>", "file_path": "D:/Samples/kick.wav", "start_beats": 32}
 ```
 
-5. 생성 결과의 `clip_id`로 `ableton_add_midi_notes`를 호출합니다.
+원본 get_* 출력은 JSON 문자열 또는 사람이 읽는 문자열입니다. 확장 도구는 JSON
+객체를 반환합니다. `ableton_move_arrangement_clip`이 반환하는 새 clip_id를 이후
+호출에 사용하세요. 노트 ID도 실제 조회 결과를 사용해야 합니다.
 
-```json
-{
-  "clip_id":"생성 결과의 clip_id",
-  "notes":[
-    {"pitch":60,"start_time":0,"duration":0.5,"velocity":100},
-    {"pitch":64,"start_time":1,"duration":0.5,"velocity":100},
-    {"pitch":67,"start_time":2,"duration":0.5,"velocity":100},
-    {"pitch":72,"start_time":3,"duration":0.5,"velocity":100}
-  ]
-}
-```
+## 확장 도구의 제한과 실패
 
-6. 이름은 `ableton_update_arrangement_clip`의 `name`으로 바꿉니다.
-7. `ableton_get_midi_notes`와 클립 상세를 다시 읽어 결과를 확인합니다.
-
-자연어 예: “Arrangement의 MIDI 트랙 목록을 확인하고, 첫 트랙의 5마디가 비어 있으면
-한 마디 클립을 만든 뒤 C-E-G-C 음표를 한 박자 간격으로 넣어줘.”
-실제 도구 호출은 위 식별자를 조회한 뒤 수행됩니다.
-
-## 편집 결과와 제한
-
-생성·복제의 `[start, end)` 구간이 기존 클립과 겹치면 거부합니다. 경계가 맞닿는
-구간은 허용됩니다. 녹음 모드나 Session 녹음이 켜져 있거나 트랙이 Freeze이면
-쓰기 작업을 거부합니다. 읽기는 계속 가능합니다.
-
-각 쓰기는 Live Undo 단계로 묶지만 **트랜잭션은 아닙니다.** Live가 중간 속성 변경
-이후 오류를 내면 일부 변경이 남을 수 있습니다. 자동 Undo나 자동 재시도는 하지
-않습니다. 오류 뒤에는 현재 상태를 확인하고 필요하면 Live에서 Undo하세요.
-MCP 결과는 메모리상의 Set 변경이며 파일 저장 완료를 의미하지 않습니다.
+- 이름 최대 256자, RGB 0..0xFFFFFF (Live가 가장 가까운 색으로 맞춤).
+- 생성·복제·이동은 동일 트랙의 기존 클립과 겹침을 거부. 이동 시 자기 원본과 겹쳐도 거부.
+- 오디오 가져오기는 해당 Live PC의 실제 파일을 읽으며 트랙 마지막 클립 이후만 허용.
+- MIDI 추가·수정·삭제는 한 번에 1..256개, 노트 조회는 최대 1,000개.
+  잘린 결과는 start_beats/length_beats 범위를 나눠 조회합니다.
+- Freeze·녹음 중 확장 편집을 거부하며 native capability가 없으면 UNSUPPORTED.
+- move는 복제→검증→원본 삭제를 한 Undo 단계에 묶음. native 호출이 트랜잭션은
+  아니므로 PARTIAL_MOVE/RESULT_UNCERTAIN 또는 timeout이면 목록을 다시 확인합니다.
+- 즉시 자동 재시도하거나 전체 Set을 자동 Undo/저장하지 않습니다.
+- 트리밍/리사이즈, 다른 트랙으로 Arrangement 복사, Take Lane/오토메이션 편집은 미제공.

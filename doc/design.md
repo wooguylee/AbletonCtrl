@@ -1,3 +1,5 @@
+> Historical 0.1 Arrangement-only plan. Current scope: [upstream integration](upstream-integration-plan.md) and [README](README.md).
+
 # Arrangement MCP design — 2026-09-24
 
 ## Goal and scope

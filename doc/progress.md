@@ -29,3 +29,18 @@
 - MCP selection Q&A: verified official Codex transport/registration documentation and current
   stdio/loopback code. Added an FAQ distinguishing MCP compatibility from Arrangement capabilities.
   Documentation-only update; checked staged diff and links, no runtime test rerun needed.
+
+## 0.2.0 upstream integration — 2026-09-24
+
+- Corrected scope: preserve ahujasid/ableton-mcp and extend Arrangement in one MCP.
+- Pinned and vendored 16 original Python files byte-for-byte from commit 9dddc7b;
+  preserved 37 tool schemas, added 14 Arrangement tools in total, retained MIT notices.
+- Combined main-thread native dispatch, authenticated bridge, default-off optional
+  dataset collection, 16 MiB bounded frames and longer heavy-command response budgets.
+- Added safe-tail audio import, verified same-track move, note-ID update/delete.
+- Built wheel including full native script and packaged installer; clone/Git/pip/uv
+  usage, migration and Korean/English documentation included.
+- 29 tests pass; separate wheel venv and temporary project install discover 51 tools.
+- Independent review fixed incorrect passive capability and unrelated-venv selection.
+- Real Live 12 Suite, macOS, optional backend acceptance remain unverified.
+- All records kept in doc; routine completion proceeds with commit/push to origin/main.

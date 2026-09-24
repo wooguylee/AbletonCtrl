@@ -1,6 +1,7 @@
 """Live operations. Called only by the Live main thread; no external dependencies."""
 import inspect
 import math
+import os
 import uuid
 from collections import OrderedDict
 
@@ -31,7 +32,8 @@ def require_method(obj, name):
 
 class ArrangementAPI:
     METHODS = ("status", "list_tracks", "list_clips", "get_clip", "update_clip",
-               "create_midi_clip", "duplicate_clip", "delete_clip", "get_notes", "add_notes")
+               "create_midi_clip", "create_audio_clip", "duplicate_clip", "move_clip",
+               "delete_clip", "get_notes", "add_notes", "update_notes", "delete_notes")
 
     def __init__(self, song, version, note_factory):
         self.song = song
@@ -126,7 +128,7 @@ class ArrangementAPI:
         return items[offset:offset + limit]
 
     def status(self):
-        return {"bridge_version": "0.1.0", "live_version": self.version,
+        return {"bridge_version": "0.2.0", "live_version": self.version,
                 "time_unit": "beats", "tempo": self.song.tempo,
                 "time_signature": [self.song.signature_numerator, self.song.signature_denominator],
                 "is_playing": bool(self.song.is_playing), "track_count": len(self.song.tracks),
@@ -141,7 +143,7 @@ class ArrangementAPI:
                            "is_audio": bool(track.has_audio_input), "is_group": bool(track.is_foldable),
                            "is_frozen": bool(track.is_frozen),
                            "capabilities": {name: callable(getattr(track, name, None)) for name in
-                                            ("create_midi_clip", "duplicate_clip_to_arrangement", "delete_clip")},
+                                            ("create_midi_clip", "create_audio_clip", "duplicate_clip_to_arrangement", "delete_clip")},
                            "arrangement_available": hasattr(track, "arrangement_clips")})
         return {"tracks": result, "total": len(tracks), "offset": offset}
 
@@ -210,6 +212,48 @@ class ArrangementAPI:
         self._space(track, destination_beats, clip.end_time - clip.start_time)
         return self._insert(track, lambda: duplicate(clip, float(destination_beats)))
 
+    def create_audio_clip(self, track_id, file_path, start_beats):
+        track = self._resolve(track_id, "track")
+        if not track.has_audio_input:
+            raise BridgeError("WRONG_TRACK_TYPE", "Audio clips require an audio track")
+        self._editable(track)
+        create = require_method(track, "create_audio_clip")
+        number(start_beats, "start_beats")
+        if not isinstance(file_path, str) or not os.path.isabs(file_path) or not os.path.isfile(file_path):
+            raise BridgeError("INVALID_ARGUMENT", "file_path must be an existing absolute file on the Live computer")
+        # Imported length depends on Live's warp settings and is unknown before insertion.
+        if any(start_beats < c.end_time for c in self._clips(track)):
+            raise BridgeError("OVERLAP", "Import audio at or after the last clip on this track")
+        return self._insert(track, lambda: create(file_path, float(start_beats)))
+
+    def move_clip(self, clip_id, destination_beats):
+        track, clip = self._resolve(clip_id, "clip")
+        self._editable(track, clip)
+        number(destination_beats, "destination_beats")
+        if destination_beats == clip.start_time:
+            return self._snapshot(track, clip)
+        duplicate = require_method(track, "duplicate_clip_to_arrangement")
+        delete = require_method(track, "delete_clip")
+        length = clip.end_time - clip.start_time
+        self._space(track, destination_beats, length)
+        before = self._clips(track)
+        def apply():
+            duplicate(clip, float(destination_beats))
+            added = [c for c in self._clips(track) if c not in before]
+            if (len(added) != 1 or not math.isclose(added[0].start_time, destination_beats, abs_tol=1e-6)
+                    or not math.isclose(added[0].end_time - added[0].start_time, length, abs_tol=1e-6)
+                    or added[0].is_midi_clip != clip.is_midi_clip):
+                raise BridgeError("RESULT_UNCERTAIN", "Could not verify the copy; original preserved. List clips before retrying")
+            copied = self._snapshot(track, added[0])
+            try:
+                delete(clip)
+            except Exception as exc:
+                raise BridgeError("PARTIAL_MOVE", "Could not delete original; inspect original %s and copy %s before retrying: %s" %
+                                  (clip_id, copied["clip_id"], exc))
+            self.handles.pop(clip_id, None)
+            return copied
+        return self._mutate(apply)
+
     def delete_clip(self, clip_id):
         track, clip = self._resolve(clip_id, "clip")
         self._editable(track, clip)
@@ -262,3 +306,62 @@ class ArrangementAPI:
             specs.append(self.note_factory(**fields))
         self._mutate(lambda: add(tuple(specs)))
         return {"clip_id": clip_id, "added_count": len(specs)}
+
+    @staticmethod
+    def _notes_by_id(clip, note_ids):
+        if not isinstance(note_ids, list) or not 1 <= len(note_ids) <= 256:
+            raise BridgeError("INVALID_ARGUMENT", "Supply 1 to 256 note IDs")
+        for note_id in note_ids:
+            number(note_id, "note_id", high=2**53 - 1, integer=True)
+        if len(set(note_ids)) != len(note_ids):
+            raise BridgeError("INVALID_ARGUMENT", "Duplicate note IDs")
+        notes = require_method(clip, "get_notes_by_id")(tuple(note_ids))
+        if set(n.note_id for n in notes) != set(note_ids):
+            raise BridgeError("STALE_NOTE_IDS", "Some note IDs no longer exist; read notes again")
+        return notes
+
+    def update_notes(self, clip_id, notes):
+        track, clip = self._midi(clip_id)
+        self._editable(track, clip)
+        apply = require_method(clip, "apply_note_modifications")
+        if not isinstance(notes, list) or not 1 <= len(notes) <= 256:
+            raise BridgeError("INVALID_ARGUMENT", "Supply 1 to 256 note updates")
+        updates = {}
+        for note in notes:
+            if (not isinstance(note, dict) or "note_id" not in note or len(note) < 2
+                    or set(note) - {"note_id", "pitch", "start_time", "duration", "velocity", "mute"}):
+                raise BridgeError("INVALID_ARGUMENT", "Each update needs note_id and supported note fields")
+            note_id = number(note["note_id"], "note_id", high=2**53 - 1, integer=True)
+            if note_id in updates:
+                raise BridgeError("INVALID_ARGUMENT", "Duplicate note IDs")
+            fields = dict(note)
+            del fields["note_id"]
+            for key, value in fields.items():
+                if key == "mute":
+                    if type(value) is not bool:
+                        raise BridgeError("INVALID_ARGUMENT", "mute must be boolean")
+                else:
+                    number(value, key, low=-MAX_BEATS if key == "start_time" else 0,
+                           high=127 if key in ("pitch", "velocity") else MAX_BEATS,
+                           positive=key == "duration", integer=key == "pitch")
+            updates[note_id] = fields
+        native_notes = self._notes_by_id(clip, list(updates))
+        for note in native_notes:
+            fields = updates[note.note_id]
+            number(fields.get("start_time", note.start_time) + fields.get("duration", note.duration),
+                   "note_end", low=-MAX_BEATS)
+        def write():
+            for note in native_notes:
+                for key, value in updates[note.note_id].items():
+                    setattr(note, key, value)
+            apply(native_notes)
+        self._mutate(write)
+        return {"clip_id": clip_id, "updated_count": len(updates)}
+
+    def delete_notes(self, clip_id, note_ids):
+        track, clip = self._midi(clip_id)
+        self._editable(track, clip)
+        remove = require_method(clip, "remove_notes_by_id")
+        self._notes_by_id(clip, note_ids)
+        self._mutate(lambda: remove(tuple(note_ids)))
+        return {"clip_id": clip_id, "deleted_count": len(note_ids)}

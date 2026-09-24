@@ -1,0 +1,227 @@
+{
+  "commit": "9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
+  "tools": [
+    {
+      "name": "set_dataset_consent",
+      "signature": "ctx: Context, consent: bool, user_said: str=''",
+      "doc": "Record the user's answer to the dataset consent question.\n\nCall this ONLY after the user has answered in their own words. Never infer\nthe answer, never call it on their behalf, and never call it because\ncontributing seems helpful — consent the user did not give is not consent.\nIf they have not been asked yet, ask first and wait for their reply.\n\nParameters:\n- consent: True if the user agreed to contribute, False if they declined\n- user_said: The user's reply, quoted as closely as possible",
+      "source_line": 359
+    },
+    {
+      "name": "get_session_info",
+      "signature": "ctx: Context, user_prompt: str=''",
+      "doc": "Get detailed information about the current Ableton session\n\nParameters:\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 420
+    },
+    {
+      "name": "get_remote_script_info",
+      "signature": "ctx: Context, user_prompt: str=''",
+      "doc": "Report Ableton Remote Script version and capabilities (handshake).\n\nUse this to verify the Live-side bridge matches this MCP server package.",
+      "source_line": 438
+    },
+    {
+      "name": "get_track_info",
+      "signature": "ctx: Context, track_index: int, user_prompt: str=''",
+      "doc": "Get detailed information about a specific track in Ableton.\n\nParameters:\n- track_index: The index of the track to get information about\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 460
+    },
+    {
+      "name": "get_clip_notes",
+      "signature": "ctx: Context, track_index: int, clip_index: int, user_prompt: str=''",
+      "doc": "Read all MIDI notes from a Session-view clip.\n\nReturns pitch, start_time, duration, velocity, mute (and extended fields when available).\n\nParameters:\n- track_index: Track that owns the clip\n- clip_index: Session clip slot index\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 480
+    },
+    {
+      "name": "get_device_parameters",
+      "signature": "ctx: Context, track_index: int, device_index: int, user_prompt: str=''",
+      "doc": "Read all parameters for a device on a track (name, value, min, max).\n\nParameters:\n- track_index: Track that owns the device\n- device_index: Index into the track's device chain\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 516
+    },
+    {
+      "name": "set_device_parameter",
+      "signature": "ctx: Context, track_index: int, device_index: int, parameter_index: int, value: float, user_prompt: str=''",
+      "doc": "Set a device parameter to a specific value.\n\nUse get_device_parameters first to discover parameter indices and ranges.\n\nParameters:\n- track_index: Track that owns the device\n- device_index: Index into the track's device chain\n- parameter_index: Index into device.parameters\n- value: New parameter value (Live parameter units)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 545
+    },
+    {
+      "name": "get_session_snapshot",
+      "signature": "ctx: Context, include_notes: bool=True, include_params: bool=True, user_prompt: str=''",
+      "doc": "Capture a full project state snapshot for trajectory recording.\n\nIncludes session metadata, every track (mixer, devices, session clips,\narrangement clips), optional MIDI notes, and optional device parameters.\nUsed to version musical state S_t → S_{t+1}.\n\nParameters:\n- include_notes: Include MIDI note arrays in clips (default True)\n- include_params: Include device parameter values (default True)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 588
+    },
+    {
+      "name": "create_midi_track",
+      "signature": "ctx: Context, index: int=-1, user_prompt: str=''",
+      "doc": "Create a new MIDI track in the Ableton session.\n\nParameters:\n- index: The index to insert the track at (-1 = end of list)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 629
+    },
+    {
+      "name": "create_audio_track",
+      "signature": "ctx: Context, index: int=-1, user_prompt: str=''",
+      "doc": "Create a new audio track in the Ableton session.\n\nUse this for recorded or imported audio (samples, stems, vocals). For MIDI\ninstruments use create_midi_track instead.\n\nParameters:\n- index: The index to insert the track at (-1 = end of list)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 649
+    },
+    {
+      "name": "set_track_name",
+      "signature": "ctx: Context, track_index: int, name: str, user_prompt: str=''",
+      "doc": "Set the name of a track.\n\nParameters:\n- track_index: The index of the track to rename\n- name: The new name for the track\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 672
+    },
+    {
+      "name": "create_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, length: float=4.0, user_prompt: str=''",
+      "doc": "Create a new MIDI clip in the specified track and clip slot.\n\nParameters:\n- track_index: The index of the track to create the clip in\n- clip_index: The index of the clip slot to create the clip in\n- length: The length of the clip in beats (default: 4.0)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 692
+    },
+    {
+      "name": "create_audio_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, path: str, user_prompt: str=''",
+      "doc": "Create a new audio clip in an audio track's clip slot by importing a file.\n\nRequires Ableton Live 12.0.5 or newer — the underlying\nClipSlot.create_audio_clip Live API was introduced in 12.0.5 and is not\navailable in earlier 12.0.x releases.\n\nParameters:\n- track_index: The index of the audio track to create the clip in\n- clip_index: The index of the clip slot to create the clip in\n- path: Absolute path to a supported audio file (e.g. a .wav). The target\n  track must be an audio track and the clip slot must be empty.\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 717
+    },
+    {
+      "name": "add_notes_to_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, notes: List[Dict[str, Union[int, float, bool]]], user_prompt: str=''",
+      "doc": "Add MIDI notes to a clip.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot containing the clip\n- notes: List of note dictionaries, each with pitch, start_time, duration, velocity, and mute\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 747
+    },
+    {
+      "name": "clear_notes_from_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, user_prompt: str=''",
+      "doc": "Remove all MIDI notes from a Session clip.\n\nWrites are additive (add_notes_to_clip only appends), so to truly *modify*\na clip you clear it first, then add the new notes. Use this with\nget_clip_notes and add_notes_to_clip for a real read -> modify -> write\nloop: read the notes, edit the list, clear_notes_from_clip, then\nadd_notes_to_clip the edited notes.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot containing the clip\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 777
+    },
+    {
+      "name": "set_clip_name",
+      "signature": "ctx: Context, track_index: int, clip_index: int, name: str, user_prompt: str=''",
+      "doc": "Set the name of a clip.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot containing the clip\n- name: The new name for the clip\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 821
+    },
+    {
+      "name": "set_arrangement_clip_name",
+      "signature": "ctx: Context, track_index: int, clip_index: int, name: str, user_prompt: str=''",
+      "doc": "Set the name of a clip placed in the Arrangement timeline.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip within track.arrangement_clips, in the\n  same order returned by get_arrangement_clips (i.e. ordered by start_time)\n- name: The new name for the clip\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 846
+    },
+    {
+      "name": "set_tempo",
+      "signature": "ctx: Context, tempo: float, user_prompt: str=''",
+      "doc": "Set the tempo of the Ableton session.\n\nParameters:\n- tempo: The new tempo in BPM\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 872
+    },
+    {
+      "name": "load_instrument_or_effect",
+      "signature": "ctx: Context, track_index: int, uri: str, user_prompt: str=''",
+      "doc": "Load an instrument or effect onto a track using its URI.\n\nParameters:\n- track_index: The index of the track to load the instrument on\n- uri: The URI of the instrument or effect to load (e.g., 'query:Synths#Instrument%20Rack:Bass:FileId_5116')\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 892
+    },
+    {
+      "name": "fire_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, user_prompt: str=''",
+      "doc": "Start playing a clip.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot containing the clip\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 925
+    },
+    {
+      "name": "stop_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, user_prompt: str=''",
+      "doc": "Stop playing a clip.\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot containing the clip\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 948
+    },
+    {
+      "name": "delete_clip",
+      "signature": "ctx: Context, track_index: int, clip_index: int, user_prompt: str=''",
+      "doc": "Delete the clip in the given clip slot, freeing it for reuse.\n\nUse this before create_clip when you want to overwrite an existing clip\n(create_clip itself refuses to write into an occupied slot).\n\nParameters:\n- track_index: The index of the track containing the clip\n- clip_index: The index of the clip slot to clear\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 971
+    },
+    {
+      "name": "start_playback",
+      "signature": "ctx: Context, user_prompt: str=''",
+      "doc": "Start playing the Ableton session.\n\nParameters:\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1003
+    },
+    {
+      "name": "stop_playback",
+      "signature": "ctx: Context, user_prompt: str=''",
+      "doc": "Stop playing the Ableton session.\n\nParameters:\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1020
+    },
+    {
+      "name": "get_browser_tree",
+      "signature": "ctx: Context, category_type: str='all', user_prompt: str=''",
+      "doc": "Get a hierarchical tree of browser categories from Ableton.\n\nParameters:\n- category_type: Type of categories to get ('all', 'instruments', 'sounds', 'drums', 'audio_effects', 'midi_effects')\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1037
+    },
+    {
+      "name": "get_browser_items_at_path",
+      "signature": "ctx: Context, path: str, user_prompt: str=''",
+      "doc": "Get browser items at a specific path in Ableton's browser.\n\nParameters:\n- path: Path in the format \"category/folder/subfolder\"\n        where category is one of the available browser categories in Ableton\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1103
+    },
+    {
+      "name": "load_drum_kit",
+      "signature": "ctx: Context, track_index: int, rack_uri: str, kit_path: str, user_prompt: str=''",
+      "doc": "Load a drum rack and then load a specific drum kit into it.\n\nParameters:\n- track_index: The index of the track to load on\n- rack_uri: The URI of the drum rack to load (e.g., 'Drums/Drum Rack')\n- kit_path: Path to the drum kit inside the browser (e.g., 'drums/acoustic/kit1')\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1147
+    },
+    {
+      "name": "switch_to_arrangement_view",
+      "signature": "ctx: Context, user_prompt: str=''",
+      "doc": "Switch Ableton's main window to the Arrangement view.\n\nParameters:\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1201
+    },
+    {
+      "name": "set_arrangement_time",
+      "signature": "ctx: Context, time: float, user_prompt: str=''",
+      "doc": "Move the arrangement playhead to a specific position.\n\nParameters:\n- time: Position in beats from the start of the arrangement (e.g. 8.0 = bar 3 in 4/4)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1219
+    },
+    {
+      "name": "get_arrangement_clips",
+      "signature": "ctx: Context, track_index: int, user_prompt: str=''",
+      "doc": "List all clips placed in the Arrangement timeline for a track.\n\nReturns each clip's name, start_time, end_time, length, and type.\n\nParameters:\n- track_index: The index of the track to inspect\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1239
+    },
+    {
+      "name": "duplicate_to_arrangement",
+      "signature": "ctx: Context, track_index: int, clip_index: int, destination_time: float, user_prompt: str=''",
+      "doc": "Copy a Session-view clip into the Arrangement timeline.\n\nUses Live's track.duplicate_clip_to_arrangement() API (Live 11 / 12).\nThe clip is placed at destination_time beats from the start of the\narrangement on the same track it lives in.\n\nTypical workflow:\n  1. create_clip / add_notes_to_clip to build a Session clip\n  2. Call duplicate_to_arrangement once per bar/section you need\n  3. Call switch_to_arrangement_view to confirm the result in Live\n\nParameters:\n- track_index:       Index of the track that owns the Session clip\n- clip_index:        Index of the clip slot in that track (Session view)\n- destination_time:  Beat position in the arrangement to place the clip\n                     (e.g. 0.0 = start, 8.0 = bar 3 in 4/4)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1261
+    },
+    {
+      "name": "create_locator",
+      "signature": "ctx: Context, name: str, time: float, user_prompt: str=''",
+      "doc": "Create a named locator (cue point) in the Arrangement at a beat position.\n\nIf a locator already exists at that beat (within ~1e-3 tolerance) it is\nrenamed instead of toggled off. Time is in beats from the start of the\narrangement (e.g. 0.0 = start, 16.0 = bar 5 in 4/4).\n\nParameters:\n- name: The locator label (e.g. \"Chorus\", \"Verse 1\", \"Drop\")\n- time: Beat position where the locator should sit\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1310
+    },
+    {
+      "name": "submit_intent",
+      "signature": "ctx: Context, text: str, level: int=5, user_prompt: str=''",
+      "doc": "Record the human's creative intent for subsequent actions in this session.\n\nCall this before a sequence of edits so trajectory steps are conditioned on intent.\nLevels: 1=atomic, 2=musical op, 3=section, 4=song, 5=creative goal.\n\nRequires telemetry consent. Data is stored in Supabase (same project as telemetry).\n\nParameters:\n- text: Natural-language intent (e.g. \"make the chorus feel bigger\")\n- level: Hierarchical intent level 1–5 (default 5)\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1353
+    },
+    {
+      "name": "rate_last_action",
+      "signature": "ctx: Context, rating: str, tags: str='', note: str='', user_prompt: str=''",
+      "doc": "Rate the most recent recorded action (or the track after an edit).\n\nRatings: better | same | worse | keep | reject | thumbs_up | thumbs_down\nOptional tags (comma-separated): groove, harmony, melody, sound, arrangement,\nenergy, mix, emotion\n\nRequires telemetry consent.\n\nParameters:\n- rating: Preference label\n- tags: Comma-separated aspect tags\n- note: Optional free-text reason\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1391
+    },
+    {
+      "name": "prefer_candidate",
+      "signature": "ctx: Context, candidate_a: str, candidate_b: str, winner: str, reason: str='', user_prompt: str=''",
+      "doc": "Record a pairwise preference between two candidate actions or auditions.\n\nwinner should be 'a', 'b', or an explicit candidate id matching A or B.\n\nRequires telemetry consent.\n\nParameters:\n- candidate_a: Id / URI / label for option A\n- candidate_b: Id / URI / label for option B\n- winner: 'a', 'b', or the winning id\n- reason: Optional reason (\"C has the right attack\")\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1435
+    },
+    {
+      "name": "reject_last_action",
+      "signature": "ctx: Context, reason: str='', user_prompt: str=''",
+      "doc": "Mark the last action as rejected (exploration / preference boundary).\n\nUse when the human undoes or discards an agent edit. Requires telemetry consent.\n\nParameters:\n- reason: Optional why it was rejected\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1484
+    },
+    {
+      "name": "record_audition",
+      "signature": "ctx: Context, uri: str, kept: bool=False, search_query: str='', dwell_ms: float=0.0, user_prompt: str=''",
+      "doc": "Log a browser/preset/sample audition (keep or reject) for preference learning.\n\nCall once per candidate auditioned. Does not load the device — use\nload_instrument_or_effect when kept=True and you want to commit.\n\nRequires telemetry consent.\n\nParameters:\n- uri: Browser item URI (or stable preset/sample id)\n- kept: Whether this candidate was kept\n- search_query: Optional search text that led here (e.g. \"analog bass\")\n- dwell_ms: Optional time spent auditioning\n- user_prompt: The original user prompt that led to this tool call (for telemetry)",
+      "source_line": 1517
+    }
+  ]
+}

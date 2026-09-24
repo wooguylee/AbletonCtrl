@@ -9,13 +9,14 @@
 PowerShell에서 프로젝트 루트로 이동한 다음 실행합니다.
 
 ```powershell
-Set-Location 'Z:\Work\WorkAI\AbletonCtrl'
+git clone https://github.com/wooguylee/AbletonCtrl.git
+cd AbletonCtrl
 py -3.12 -m venv .venv
-.venv\Scripts\python -m pip install -e .
+.venv\Scripts\python -m pip install .
 .venv\Scripts\python scripts\configure.py
 ```
 
-현재 작업에서는 이 단계가 완료되어 있습니다. 설정 도우미는 다음을 생성합니다.
+설정 도우미는 다음을 생성합니다.
 
 - `doc/local/bridge.json`: 임의의 인증 토큰, TCP 포트(기본 8765), 제한 시간.
 - `doc/local/codex-config.toml`: 이 컴퓨터의 절대 경로가 반영된 Codex 설정 예.
@@ -106,8 +107,8 @@ Copy-Item -LiteralPath 'doc\local\codex-config.toml' -Destination '.codex\config
 방식으로 호환되게 구현한 서버라면 직접 만든 서버도 연결할 수 있습니다.
 근거: [공식 MCP 지원 기능과 등록 방법](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
-이 프로젝트에서는 자체 제작한 `Ableton Arrangement MCP`를 사용합니다.
-연결 구조는 `Codex → stdio MCP 서버 → 로컬 TCP → Live Remote Script → Arrangement 클립`입니다.
+이 프로젝트에서는 원본 ableton-mcp 기능에 Arrangement 확장을 더한 `AbletonCtrl`을 사용합니다.
+연결 구조는 `Codex → stdio MCP 서버 → 로컬 TCP → 통합 Live Remote Script → Session·장치·Arrangement`입니다.
 Codex에는 MCP 서버를 등록하고, Live에는 함께 제공하는 Remote Script를 설치·활성화합니다.
 이 구현은 loopback에 연결하므로 MCP 프로세스와 Live를 같은 컴퓨터에서 실행합니다.
 
@@ -115,3 +116,23 @@ Codex에는 MCP 서버를 등록하고, Live에는 함께 제공하는 Remote Sc
 Arrangement 제어가 보장되지는 않으며, 선택한 서버가 필요한 클립 조회·생성·편집
 도구와 Live 측 동작을 구현해야 합니다. 현재 구현의 범위와 검증 한계는
 [도구 설명](tools.md)과 [검증 기록](verification.md)에 구분해 두었습니다.
+
+## 기존 ahujasid/ableton-mcp에서 전환
+
+1. 기존 Live `AbletonMCP` Control Surface를 `None`으로 바꿉니다.
+2. 이 저장소를 설치하고 함께 제공하는 `AbletonArrangementMCP`를 활성화합니다.
+3. 클라이언트의 기존 `ableton-mcp`/`uvx ableton-mcp` 서버 등록을 해제합니다.
+4. 생성된 `abletonctrl` MCP 항목을 등록합니다. 기존 0.1 버전의
+   `ableton_arrangement` 항목이 있으면 이 항목으로 교체합니다.
+5. 새 MCP 세션에서 51개 도구, `ableton_status` 버전 0.2.0,
+   `get_remote_script_info`의 name AbletonCtrl과 원본 commit을 확인합니다.
+
+원본 도구의 이름·입력 형식은 유지하지만 네트워크 프로토콜은 바뀌었습니다.
+원본의 9877 TCP 서버와 이 프로젝트의 인증 bridge(기본 8765)를 섞지 않습니다.
+기존 설정·Remote Script를 삭제할 필요는 없으며 비활성화한 상태로 보관할 수 있습니다.
+원본 클립/트랙 index는 그대로 쓰고, 새 `ableton_` 도구는 목록에서 받은 ID를 씁니다.
+긴 오디오 가져오기·브라우저 작업을 위해 생성된 Codex tool_timeout_sec는 180초입니다.
+
+소스 복제 없이 Git/pip로 설치하거나 macOS에서 사용하는 방법은
+[English quickstart](quickstart-en.md)를 참고하세요. wheel에도 Live Script가 포함됩니다.
+설정 파일과 Live 스크립트의 실제 활성화는 여전히 별도 단계입니다.

@@ -1,0 +1,88 @@
+{
+  "repository": "https://github.com/ahujasid/ableton-mcp",
+  "commit": "9dddc7bd5b95412510fdeb745949e3bf23f3fd8a",
+  "package_version": "1.4.5",
+  "script_version": "1.7.1",
+  "files": [
+    {
+      "upstream_path": "MCP_Server/remote_script_install.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/remote_script_install.py",
+      "sha256": "6eb6483698789e28ec3dd5665d168a1e52daf5add7b25736e9257308fff7f4a1"
+    },
+    {
+      "upstream_path": "MCP_Server/script_handshake.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/script_handshake.py",
+      "sha256": "a05ad8c0b88ceb46866ca6f7fe6dab0bda6c7755582569a7a8f374404621d012"
+    },
+    {
+      "upstream_path": "MCP_Server/server.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/server.py",
+      "sha256": "938345b509aef7cdc6fcaabad4b00c85e7338b5dc4786751193c8957fe4515a4"
+    },
+    {
+      "upstream_path": "MCP_Server/telemetry.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/telemetry.py",
+      "sha256": "96110399ea9097e1bf230f8f5714af9ada6a7f85c9dca5473157f6a2063758bb"
+    },
+    {
+      "upstream_path": "MCP_Server/telemetry_decorator.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/telemetry_decorator.py",
+      "sha256": "13d9bc4508d97c2ae23c864667ed3cc473551c4efca43963f5dc8f988bf466c4"
+    },
+    {
+      "upstream_path": "MCP_Server/__init__.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/__init__.py",
+      "sha256": "5033a4d8588176251fa2bdc09c32f0634ce7e0b8a9df1ee1a62025ff2fb8cc75"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/consent.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/consent.py",
+      "sha256": "e5fc8ccd7aba342f2eaa51e630ecb11c15d722abffcf8c7a16985aad80d4066a"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/hierarchy.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/hierarchy.py",
+      "sha256": "722a4a28742fa470e806132831b6882ba9b707abd7d72b72d88d19918f05797f"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/passive_poller.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/passive_poller.py",
+      "sha256": "ebcc50ae0e701934a5e1b2ce3f4837ae63737dd8336b409abed0ac1885fa04ea"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/recorder.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/recorder.py",
+      "sha256": "11a5f37dcfeca751ed364dca41038438460156e51f46f78bdea22e1c39723af6"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/schema.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/schema.py",
+      "sha256": "2453a96ee65cbed730ebc60cc12710be1cfeb092a48c25c9a36a1e2e4658b363"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/snapshot.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/snapshot.py",
+      "sha256": "b6d77dce88891039ba7df4f7f7626c48411501142632d7ac2c48524a6f2cb3a1"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/supabase_client.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/supabase_client.py",
+      "sha256": "13ab5f32bd37000f83af143dca33c189bfe76237e3b67f6f6c9beb3db58322e8"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/trajectory_decorator.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/trajectory_decorator.py",
+      "sha256": "fb098aadb97ca85da8fc1d086402ccdca31ef87daa9c13a9b2fa34924fa05d62"
+    },
+    {
+      "upstream_path": "MCP_Server/dataset/__init__.py",
+      "local_path": "src/ableton_arrangement_mcp/upstream/dataset/__init__.py",
+      "sha256": "f7f0c74bc263c262cb84ee548b00deb2b3e869cb6e9e5415659ebcdab9fdada6"
+    },
+    {
+      "upstream_path": "AbletonMCP_Remote_Script/__init__.py",
+      "local_path": "remote_script/AbletonArrangementMCP/upstream_live.py",
+      "sha256": "11d3eb5da3e246c2fa304839082af3e0da00a6d9cbe2b438085b261302f4002b"
+    }
+  ]
+}

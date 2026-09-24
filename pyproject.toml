@@ -4,13 +4,32 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ableton-arrangement-mcp"
-version = "0.1.0"
-description = "Local MCP bridge for Ableton Live Arrangement clips"
+version = "0.2.0"
+description = "AbletonCtrl: original ableton-mcp tools plus Arrangement clip control"
+readme = "doc/README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = ["mcp>=1.26,<2"]
 
 [project.scripts]
 ableton-arrangement-mcp = "ableton_arrangement_mcp.server:main"
+abletonctrl = "ableton_arrangement_mcp.server:main"
+abletonctrl-install = "ableton_arrangement_mcp.installer:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[project.optional-dependencies]
+dataset = ["supabase>=2,<3"]
+
+[project.urls]
+Repository = "https://github.com/wooguylee/AbletonCtrl"
+Upstream = "https://github.com/ahujasid/ableton-mcp"
+
+[tool.setuptools]
+packages = ["ableton_arrangement_mcp", "ableton_arrangement_mcp.upstream", "ableton_arrangement_mcp.upstream.dataset", "ableton_arrangement_mcp.live_script"]
+package-dir = {"" = "src", "ableton_arrangement_mcp.live_script" = "remote_script/AbletonArrangementMCP"}
+
+[tool.setuptools.package-data]
+"ableton_arrangement_mcp.upstream" = ["LICENSE"]
+"ableton_arrangement_mcp.live_script" = ["LICENSE"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["config.json", "*.pyc", "__pycache__/*"]
