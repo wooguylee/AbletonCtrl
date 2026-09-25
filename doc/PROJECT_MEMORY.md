@@ -7,6 +7,9 @@
   full cross-PC installation/MCP setup instructions in root README, replacing its index-only role.
 - Target **Ableton Live 12 Suite**.
 - Control Surface / installed Remote Script name: **AbletonVVoori** (user requested).
+- Nickname: **토니**. The user explicitly requested this in AGENTS.md on 2026-09-25.
+  "토니" refers to this AbletonVVoori / AbletonCtrl MCP; installed and MCP names stay unchanged.
+  Songwriting request examples and current capability boundaries are in doc/tony-songwriting.md.
 - 2026-09-25: user completed setup and explicitly authorized full native testing,
   especially Arrangement. Tests use dedicated local Sets under doc/local/.
 - Preserve **all tools of ahujasid/ableton-mcp** and add Arrangement control in one

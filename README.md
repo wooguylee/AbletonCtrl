@@ -5,6 +5,9 @@ Arrangement 확장 도구 17개, **총 54개 MCP 도구**를 제공합니다.
 Session·장치 제어와 Arrangement 클립 생성·복사·이동·트림·리사이즈·MIDI 노트 편집을
 하나의 MCP 서버와 Live Remote Script로 사용할 수 있습니다.
 
+AbletonVVoori의 별명은 **토니**입니다. "토니로 Arrangement에 곡을 만들어줘"처럼
+요청할 수 있습니다. [한 곡 제작 요청 예시와 지원 범위](doc/tony-songwriting.md)를 참고하세요.
+
 대상은 **Ableton Live 12 Suite**입니다. Windows Live 12.4.6 Suite에서 실기 검증했으며,
 macOS는 미검증입니다. 현재 버전 0.3.1의 범위와 제한은 아래에 안내합니다.
 

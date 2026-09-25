@@ -1,5 +1,10 @@
 # AbletonCtrl
 
+## Project nickname
+AbletonVVoori의 별명은 **토니**입니다. 사용자가 "토니"라고 하면 이 프로젝트의
+AbletonVVoori / AbletonCtrl MCP를 뜻합니다. Control Surface 표시 이름은
+`AbletonVVoori`, MCP 등록 이름은 `abletonctrl`을 유지합니다.
+
 Read `doc/PROJECT_MEMORY.md` and `doc/README.md` before working here.
 All project conversation records, research, plans, verification reports, and
 project memory belong under this project's `doc/` directory. Update them at
