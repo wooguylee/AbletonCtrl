@@ -4,6 +4,8 @@
 사용자는 원하는 음악을 자연어로 설명하고, Codex는 지원되는 도구를 통해 실제 Live
 트랙·악기·클립·MIDI 노트를 작성합니다. Control Surface 이름은 AbletonVVoori입니다.
 
+4분 곡의 구체적인 예시는 [K-POP × EDM × CCM 응원가 프롬프트](tony-anthem-prompt.md)에 있습니다.
+
 ## 현재 할 수 있는 작업
 
 | 요청 | 토니가 수행하는 작업 |

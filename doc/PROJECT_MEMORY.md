@@ -10,6 +10,9 @@
 - Nickname: **토니**. The user explicitly requested this in AGENTS.md on 2026-09-25.
   "토니" refers to this AbletonVVoori / AbletonCtrl MCP; installed and MCP names stay unchanged.
   Songwriting request examples and current capability boundaries are in doc/tony-songwriting.md.
+- Requested anthem style: K-POP + EDM + CCM, dreamy and syncopated, 4 minutes.
+  doc/tony-anthem-prompt.md is a prompt only (128 BPM, 4/4, 128 bars), not an executed
+  song or a change to the user's current Set. The supplied title/key are example choices.
 - 2026-09-25: user completed setup and explicitly authorized full native testing,
   especially Arrangement. Tests use dedicated local Sets under doc/local/.
 - Preserve **all tools of ahujasid/ableton-mcp** and add Arrangement control in one
