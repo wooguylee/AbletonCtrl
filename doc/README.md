@@ -59,6 +59,7 @@ Control Surface에 `AbletonVVoori`를 선택합니다. 기존 `AbletonMCP` 선�
 
 ## 문서
 
+- [곡 저장 위치와 첫 시티팝 Set 검증](song-storage-2026-09-25.md) — 곡 파일은 Git 제외된 `songs/<곡 제목>/` 아래에 보관
 - [토니로 Arrangement에서 한 곡 만들기 — 요청 예시](tony-songwriting.md)
 - [다른 PC의 Codex 설치·등록 — 루트 README](../README.md)
 - [설치·Codex 연결·기존 MCP에서 전환](setup.md)

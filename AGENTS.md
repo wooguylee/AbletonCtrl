@@ -19,6 +19,14 @@ Never test writes against a user's active Set without authorization. Use the
 fake Live integration tests and document what still requires live verification.
 Keep the bridge bound to loopback; do not execute arbitrary Python/API methods.
 
+## Song storage
+Save every created or edited song under `songs/<song title>/`, with a separate
+directory for each song. The entire root `songs/` directory is Git-ignored.
+Keep Live projects/Sets, MIDI/audio exports and song working files there; never
+force-add them to Git. Keep project-level summaries and verification records in
+`doc/`. Use MCP for music editing. Do not start screen automation implicitly;
+the 2026-09-25 UI permission covered saving that song only.
+
 ## Git completion
 The user requires completed work to end with a Git commit and push to
 `https://github.com/wooguylee/AbletonCtrl.git` (origin).

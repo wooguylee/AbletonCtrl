@@ -17,6 +17,17 @@
 - Remote `origin`: `https://github.com/wooguylee/AbletonCtrl.git`, branch `main`.
 - Finish authorized work with checks, record updates, commit and push. Do not re-ask.
   Never force-push or discard remote history.
+- 2026-09-25: all created/edited songs belong in root `songs/<song title>/`.
+  `/songs/` is Git-ignored, including Live Project folders, Sets, MIDI/audio and
+  musical working files. Only project documentation/rules are committed.
+- Music editing uses MCP. After the user questioned unsolicited screen automation,
+  they authorized UI automation **for this save only**. Do not generalize that
+  permission to later playback, editing or saving tasks.
+- First song: **햇살이 머문 거리** (Sunlit Avenue), 100 BPM, 4/4, A-minor-centered
+  city pop instrumental, 80 bars / 192 seconds. Five new tracks, 50 Arrangement
+  clips and 3,255 MIDI notes; four original empty tracks preserved. Saved through
+  Live's Save As under `songs/햇살이 머문 거리/햇살이 머문 거리 Project/`.
+  Read-only saved XML and MIDI checks passed; sound/mix not auditioned.
 
 ## Current implementation (0.3.1)
 

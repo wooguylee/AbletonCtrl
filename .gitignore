@@ -7,5 +7,6 @@ __pycache__/
 build/
 dist/
 doc/local/
+/songs/
 doc/conversations/*.jsonl
 remote_script/AbletonArrangementMCP/config.json
