@@ -131,6 +131,16 @@ Vocal Guide는 MIDI 62–74/D major 음계다. 최종 트랙/장치/모든 클�
 보존했다. 새 편곡은 Live 메모리에 있으므로 수동 Save As/Export가 필요하다. FX Arm 해제와
 청취 검수도 수동이다. 상세: `song-together-light-new-arrangement-2026-09-25.md`.
 
+### 2026-09-26 화음 충돌 조사 (수정 금지)
+
+사용자 요청에 따라 MCP 읽기 전용으로 현재 163클립/5,846음표와 장치 설정을 조사했다.
+작성 당시 score와 일치. 가장 유력한 후보는 18번 전환 FX의 31–32/71–72마디 등:
+Noise Sweep Lead에 음정 발진기가 켜져 있는데 G♯/A♯/C/D♯/F 등의 진행이 반주와 충돌한다.
+14번 Vocal Guide 30/70마디 C♯ 대 Em7의 D, 31/71마디 sus4/장3도 중첩도 후보다.
+87/111/119마디는 반주 G 변주에 기존 훅을 유지해 반음 중첩이 강해진다. 실제 청취는
+하지 않았으므로 들린 지점과 일치하는지는 미확정. 곡/Set 수정 없이 조사 기록만 남겼다.
+상세는 `harmony-audit-together-light-2026-09-26.md`. 후속 수정은 별도 사용자 요청이 필요하다.
+
 ### 이전 편곡 기록
 
 토니 MCP로 Live 12.4.6의 빈 Set에 128 BPM·4/4·D major 중심 128마디 응원가를 작성했다. 기본 4트랙은 보존하고 9 MIDI 트랙, 114 Arrangement clips, 4,290 notes를 만들었으며 전체 배치와 음표를 재조회했다. 첫 8마디 후렴을 먼저 만든 뒤 변주 블록으로 전개했다. 505 Core Kit, Basic Jupo Bass, After Glow Pad, E-Piano MKI Mellow, Echo Pulse, Euphoria Lead, Basic Sine Drive Lead, Echo Bells, Drifting Interferences와 Live 기본 Reverb/Hybrid Reverb/Echo를 사용했다. Vocal Guide MIDI는 D4–D5로 정리했고 실제 보컬은 생성하지 않았다. Set 저장과 오디오 렌더링은 MCP 범위 밖이므로 사용자가 `songs/함께 빛으로/`에 수동 저장한다. 상세 결과 및 들을 지점은 `song-together-light-2026-09-25.md`, 곡 자료·가사는 Git 제외 폴더를 참고한다.
