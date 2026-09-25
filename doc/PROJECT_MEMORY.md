@@ -121,4 +121,16 @@
 
 ## 두 번째 곡: 함께 빛으로 (2026-09-25)
 
+### 같은 날 새 빈 Set에서 만든 새 편곡
+
+후속 요청은 별도의 빈 기본 4트랙 Set을 MCP로 확인한 뒤 새 편곡으로 실행했다.
+14개 신규 트랙, 163 Arrangement clips, 5,846 notes, 128 BPM/4/4/128마디(beat 0–512).
+먼저 33–40마디 핵심 후렴 12클립/518노트를 작성했다. 마지막 후렴은 12→13→14 레이어이며
+Vocal Guide는 MIDI 62–74/D major 음계다. 최종 트랙/장치/모든 클립·노트 재조회와 MIDI
+백업 파싱을 완료했다. 새 자료는 `songs/함께 빛으로/2026-09-25 새 편곡/`이며 이전 .als는
+보존했다. 새 편곡은 Live 메모리에 있으므로 수동 Save As/Export가 필요하다. FX Arm 해제와
+청취 검수도 수동이다. 상세: `song-together-light-new-arrangement-2026-09-25.md`.
+
+### 이전 편곡 기록
+
 토니 MCP로 Live 12.4.6의 빈 Set에 128 BPM·4/4·D major 중심 128마디 응원가를 작성했다. 기본 4트랙은 보존하고 9 MIDI 트랙, 114 Arrangement clips, 4,290 notes를 만들었으며 전체 배치와 음표를 재조회했다. 첫 8마디 후렴을 먼저 만든 뒤 변주 블록으로 전개했다. 505 Core Kit, Basic Jupo Bass, After Glow Pad, E-Piano MKI Mellow, Echo Pulse, Euphoria Lead, Basic Sine Drive Lead, Echo Bells, Drifting Interferences와 Live 기본 Reverb/Hybrid Reverb/Echo를 사용했다. Vocal Guide MIDI는 D4–D5로 정리했고 실제 보컬은 생성하지 않았다. Set 저장과 오디오 렌더링은 MCP 범위 밖이므로 사용자가 `songs/함께 빛으로/`에 수동 저장한다. 상세 결과 및 들을 지점은 `song-together-light-2026-09-25.md`, 곡 자료·가사는 Git 제외 폴더를 참고한다.
