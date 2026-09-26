@@ -141,6 +141,16 @@ Noise Sweep Lead에 음정 발진기가 켜져 있는데 G♯/A♯/C/D♯/F 등�
 하지 않았으므로 들린 지점과 일치하는지는 미확정. 곡/Set 수정 없이 조사 기록만 남겼다.
 상세는 `harmony-audit-together-light-2026-09-26.md`. 후속 수정은 별도 사용자 요청이 필요하다.
 
+### 2026-09-27 화음 보완 (사용자 승인 후 적용)
+
+사용자가 “보완해줘”라고 요청하여 토니 MCP로 실제 Set을 수정했다. 18번 FX 40음,
+14번 Guide 19음, 총 13클립/59개 pitch만 변경했다. FX는 마디별 코드에 맞는 상승음으로,
+Guide는 30/70마디 C♯→D, 31/71마디 C♯→A, 87/111/119마디 훅을 G–G–A–D–B로 보완했다.
+전체 163클립/5,846음표 재조회 및 pitch 외 필드/장치 설정 보존, 대상 구절의 직접 반음
+중첩 해소를 검증했다. 곡 폴더의 악보·MIDI·최종 검증 자료를 갱신했고 수정 전 자료는
+`2026-09-27 화음 보완/`에 보관했다. Set 수동 저장/실제 청취는 남아 있다.
+상세: `harmony-revision-together-light-2026-09-27.md`.
+
 ### 이전 편곡 기록
 
 토니 MCP로 Live 12.4.6의 빈 Set에 128 BPM·4/4·D major 중심 128마디 응원가를 작성했다. 기본 4트랙은 보존하고 9 MIDI 트랙, 114 Arrangement clips, 4,290 notes를 만들었으며 전체 배치와 음표를 재조회했다. 첫 8마디 후렴을 먼저 만든 뒤 변주 블록으로 전개했다. 505 Core Kit, Basic Jupo Bass, After Glow Pad, E-Piano MKI Mellow, Echo Pulse, Euphoria Lead, Basic Sine Drive Lead, Echo Bells, Drifting Interferences와 Live 기본 Reverb/Hybrid Reverb/Echo를 사용했다. Vocal Guide MIDI는 D4–D5로 정리했고 실제 보컬은 생성하지 않았다. Set 저장과 오디오 렌더링은 MCP 범위 밖이므로 사용자가 `songs/함께 빛으로/`에 수동 저장한다. 상세 결과 및 들을 지점은 `song-together-light-2026-09-25.md`, 곡 자료·가사는 Git 제외 폴더를 참고한다.
