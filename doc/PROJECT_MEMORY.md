@@ -151,6 +151,17 @@ Guide는 30/70마디 C♯→D, 31/71마디 C♯→A, 87/111/119마디 훅을 G�
 `2026-09-27 화음 보완/`에 보관했다. Set 수동 저장/실제 청취는 남아 있다.
 상세: `harmony-revision-together-light-2026-09-27.md`.
 
+### 2026-09-27 16번 악기 교체
+
+사용자가 정박에 즉시 들어오면서 몽환감을 유지하는 악기를 요청했다. 16번
+`빛 | 함께 부르는 패드`의 Morning Chorus Pad를 설치된 Gentle Sixty(Drift Synth Keys)로
+MCP 교체했다. Env 1/2 Attack=.02, 빠른 필터 반응, Glide=0으로 구성하고 기존
+Reverb/Utility 공간감을 보존했다. 3클립/96음표와 다른 트랙 상태가 동일함을 검증했다.
+작업/백업은 곡 폴더의 `2026-09-27 16번 악기/`. 2:45/3:15 청취와 수동 저장은 남아 있다.
+현재 instruments.json과 최종 snapshot/검증 자료를 갱신했다. 이전 생성 스크립트의
+Morning Chorus Pad 선택은 최초 편곡 이력이며 현재 소리는 Gentle Sixty다.
+상세: `track16-instrument-together-light-2026-09-27.md`.
+
 ### 이전 편곡 기록
 
 토니 MCP로 Live 12.4.6의 빈 Set에 128 BPM·4/4·D major 중심 128마디 응원가를 작성했다. 기본 4트랙은 보존하고 9 MIDI 트랙, 114 Arrangement clips, 4,290 notes를 만들었으며 전체 배치와 음표를 재조회했다. 첫 8마디 후렴을 먼저 만든 뒤 변주 블록으로 전개했다. 505 Core Kit, Basic Jupo Bass, After Glow Pad, E-Piano MKI Mellow, Echo Pulse, Euphoria Lead, Basic Sine Drive Lead, Echo Bells, Drifting Interferences와 Live 기본 Reverb/Hybrid Reverb/Echo를 사용했다. Vocal Guide MIDI는 D4–D5로 정리했고 실제 보컬은 생성하지 않았다. Set 저장과 오디오 렌더링은 MCP 범위 밖이므로 사용자가 `songs/함께 빛으로/`에 수동 저장한다. 상세 결과 및 들을 지점은 `song-together-light-2026-09-25.md`, 곡 자료·가사는 Git 제외 폴더를 참고한다.
