@@ -162,6 +162,15 @@ Reverb/Utility 공간감을 보존했다. 3클립/96음표와 다른 트랙 상�
 Morning Chorus Pad 선택은 최초 편곡 이력이며 현재 소리는 Gentle Sixty다.
 상세: `track16-instrument-together-light-2026-09-27.md`.
 
+### 2026-09-27 13번 물방울 악기 교체
+
+사용자 요청으로 13번 `빛 | 드롭 응답 리드`를 Euphoria Lead에서 Rubber Bell(Drift/Mallets)로
+MCP 교체했다. 짧은 어택/감쇠, Sustain=0, Noise Off와 Reverb Wet=.16으로 물방울 계열을
+구성했다. 기존 Utility/믹서 및 9클립/100음표, 다른 17트랙(16번 Gentle Sixty 포함)을 보존했다.
+실제 청취/Set 저장은 남아 있다. 곡 폴더 `2026-09-27 13번 물방울 악기/`에 백업과 검증을
+보관하고 현재 악기 목록/snapshot을 갱신했다. 초기 생성 스크립트의 Euphoria Lead는 이전 선택이다.
+상세: `track13-droplet-together-light-2026-09-27.md`.
+
 ### 이전 편곡 기록
 
 토니 MCP로 Live 12.4.6의 빈 Set에 128 BPM·4/4·D major 중심 128마디 응원가를 작성했다. 기본 4트랙은 보존하고 9 MIDI 트랙, 114 Arrangement clips, 4,290 notes를 만들었으며 전체 배치와 음표를 재조회했다. 첫 8마디 후렴을 먼저 만든 뒤 변주 블록으로 전개했다. 505 Core Kit, Basic Jupo Bass, After Glow Pad, E-Piano MKI Mellow, Echo Pulse, Euphoria Lead, Basic Sine Drive Lead, Echo Bells, Drifting Interferences와 Live 기본 Reverb/Hybrid Reverb/Echo를 사용했다. Vocal Guide MIDI는 D4–D5로 정리했고 실제 보컬은 생성하지 않았다. Set 저장과 오디오 렌더링은 MCP 범위 밖이므로 사용자가 `songs/함께 빛으로/`에 수동 저장한다. 상세 결과 및 들을 지점은 `song-together-light-2026-09-25.md`, 곡 자료·가사는 Git 제외 폴더를 참고한다.
